@@ -1,0 +1,29 @@
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+
+# IDE settings
+.idea/
+.vscode/
+
+# Git Config
+.github/
+
+# Logs
+logs/
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Project-Related
+.cache
+config/.env
