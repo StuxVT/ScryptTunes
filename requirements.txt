@@ -16,4 +16,4 @@ twitchio == 2.4.0
 spotipy == 2.21.0
 
 # C:\Users\notmm\twitchtunes\bot.py: 107
-aiohttp == 3.8.4
+aiohttp == 3.8.5
