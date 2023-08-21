@@ -2,6 +2,7 @@
 
 ## todo
 - GUI
+- run as executable (terminal is hard for some)
 
 ## wish-list
 (if i get time in the future)
