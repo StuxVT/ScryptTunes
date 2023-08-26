@@ -1,4 +1,3 @@
-import tkinter as tk
 from ui.frames.settings_frame import SettingsFrame
 
 class SettingsView:

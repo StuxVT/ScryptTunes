@@ -1,8 +1,8 @@
 import logging
 from logging.handlers import RotatingFileHandler  # Import RotatingFileHandler
 from rich.logging import RichHandler
-import customtkinter as ctk
 from ui.main_app import MainApp
+
 
 def setup_logging():
     max_log_size = 1 * 1024 * 1024  # 1 MB
@@ -16,13 +16,14 @@ def setup_logging():
         ]
     )
 
+
 def main():
     setup_logging()
     logging.info("Application started")
 
-    root = ctk.CTk()
-    app = MainApp(root)
+    root = MainApp()
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()

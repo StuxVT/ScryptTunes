@@ -1,6 +1,3 @@
-import tkinter as tk
-
-
 class BotController:
     def __init__(self, bot_model):
         self.bot_model = bot_model

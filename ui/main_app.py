@@ -1,5 +1,5 @@
 # global
-import tkinter as tk
+import customtkinter as ctk
 
 # local
 from ui.controllers.bot_controller import BotController
@@ -9,10 +9,18 @@ from ui.models.settings_model import SettingsModel
 from ui.views.main_view import MainView
 
 
-class MainApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Custom Tkinter App")
+class MainApp(ctk.CTk):
+    def __init__(self):
+        super().__init__(fg_color="black")
+
+        ctk.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
+        ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+
+        self.title("ScryptTunes")
+        self.geometry(f"{800}x{500}")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
 
         #Init MVCs
         self.bot_model = BotModel()
@@ -21,17 +29,4 @@ class MainApp:
         self.bot_controller = BotController(self.bot_model)
         self.settings_controller = SettingsController(self.settings_model)
 
-        self.home_screen = MainView(self.root, self.bot_controller, self.settings_controller)
-
-        # Configure menu
-        self.menu = tk.Menu(self.root)
-        self.root.config(menu=self.menu)
-        self.submenu = tk.Menu(self.menu, tearoff=False)
-        self.menu.add_cascade(label="Menu", menu=self.submenu)
-        self.submenu.add_command(label="Settings", command=self.show_settings_screen)
-
-        # Show initial screen
-        self.home_screen.show()
-
-    def show_settings_screen(self):
-        pass
+        MainView(self, self.bot_controller, self.settings_controller).show()

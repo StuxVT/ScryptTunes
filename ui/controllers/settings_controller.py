@@ -1,4 +1,4 @@
-from customtkinter import CTkToplevel
+import customtkinter as ctk
 from ui.views.settings_view import SettingsView
 
 
@@ -10,4 +10,5 @@ class SettingsController:
         self.settings_model.update_setting(new_value)
 
     def show_settings(self):
-        SettingsView(CTkToplevel(), self).show()
+        SettingsView(ctk.CTkToplevel(), self).show()
+
