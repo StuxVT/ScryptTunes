@@ -2,7 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler  # Import RotatingFileHandler
 from rich.logging import RichHandler
 import customtkinter as ctk
-from gui.main_app import MainApp
+from ui.main_app import MainApp
 
 def setup_logging():
     max_log_size = 1 * 1024 * 1024  # 1 MB
