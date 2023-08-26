@@ -27,3 +27,4 @@ logs/
 # Project-Related
 .cache
 config/.env
+/app.log
