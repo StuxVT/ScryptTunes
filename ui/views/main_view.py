@@ -1,4 +1,3 @@
-
 from ui.frames.main_frame import MainFrame
 from ui.frames.sidebar import Sidebar
 

@@ -8,8 +8,9 @@ from ui.models.bot_model import BotModel
 from ui.models.settings_model import SettingsModel
 from ui.views.main_view import MainView
 
-ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
+ctk.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+ctk.deactivate_automatic_dpi_awareness()
 
 
 class MainApp(ctk.CTk):
