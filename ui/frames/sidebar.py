@@ -8,6 +8,6 @@ class Sidebar(CTkFrame):
         self.bot_controller = bot_controller
         self.settings_controller = settings_controller
 
-        # self.logo_label = CTkLabel(self, text=title, font=CTkFont(size=20, weight="bold"))
-        # self.logo_label.grid(row=0, column=0, sticky="new")
+        self.logo_label = CTkLabel(self, text=title, font=CTkFont(size=20, weight="bold"))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 

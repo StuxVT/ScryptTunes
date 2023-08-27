@@ -3,7 +3,7 @@ from customtkinter import CTkFrame, CTkTabview
 
 class MainFrame(CTkFrame):
     def __init__(self, master, bot_controller, settings_controller):
-        super().__init__(master, corner_radius=0, fg_color="black")
+        super().__init__(master, corner_radius=0, fg_color="transparent")
 
         self.bot_controller = bot_controller
         self.settings_controller = settings_controller

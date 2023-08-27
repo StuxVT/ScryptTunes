@@ -8,13 +8,13 @@ from ui.models.bot_model import BotModel
 from ui.models.settings_model import SettingsModel
 from ui.views.main_view import MainView
 
+ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
+ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+
 
 class MainApp(ctk.CTk):
     def __init__(self):
-        super().__init__(fg_color="black")
-
-        ctk.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
-        ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+        super().__init__()
 
         self.title("ScryptTunes")
         self.geometry(f"{800}x{500}")
