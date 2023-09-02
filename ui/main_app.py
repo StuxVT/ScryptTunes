@@ -1,5 +1,6 @@
 # global
 import customtkinter as ctk
+from os import path
 
 # local
 from ui.controllers.bot_controller import BotController
@@ -23,7 +24,7 @@ class MainApp(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        #Init MVCs
+        # Init MVCs
         self.bot_model = BotModel()
         self.settings_model = SettingsModel()
 
@@ -31,3 +32,6 @@ class MainApp(ctk.CTk):
         self.settings_controller = SettingsController(self.settings_model)
 
         MainView(self, self.bot_controller, self.settings_controller).show()
+
+        # Check for seemingly valid settings
+        print(self.settings_model.validate_nondefault())

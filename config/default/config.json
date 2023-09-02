@@ -1,1 +1,18 @@
-{"nickname": "", "prefix": "!", "channels": [""]}
+{
+  "general": {
+    "nickname": "",
+    "prefix": "!",
+    "channels": [""]
+  },
+  "twitch": {
+    "token": "",
+    "client_id": "",
+    "client_secret": "",
+    "channel_points_reward": ""
+  },
+  "spotify": {
+    "spotify_client_id": "",
+    "spotify_secret": "",
+    "spotify_redirect_uri": ""
+  }
+}
