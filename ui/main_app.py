@@ -1,12 +1,14 @@
 # global
+import logging
+
 import customtkinter as ctk
+import json
 from os import path
 
 # local
 from ui.controllers.bot_controller import BotController
 from ui.controllers.settings_controller import SettingsController
 from ui.models.bot_model import BotModel
-from ui.models.settings_model import SettingsModel
 from ui.views.main_view import MainView
 
 ctk.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
@@ -24,14 +26,10 @@ class MainApp(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        # Init MVCs
+        # init other stuff
+        self.settings_controller = SettingsController()
         self.bot_model = BotModel()
-        self.settings_model = SettingsModel()
-
         self.bot_controller = BotController(self.bot_model)
-        self.settings_controller = SettingsController(self.settings_model)
 
+        # start main app
         MainView(self, self.bot_controller, self.settings_controller).show()
-
-        # Check for seemingly valid settings
-        print(self.settings_model.validate_nondefault())
