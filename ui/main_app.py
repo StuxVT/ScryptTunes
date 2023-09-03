@@ -1,9 +1,5 @@
 # global
-import logging
-
 import customtkinter as ctk
-import json
-from os import path
 
 # local
 from ui.controllers.bot_controller import BotController
