@@ -8,6 +8,7 @@ class SettingsFrame(CTkFrame):
         self.settings_controller = settings_controller
 
         self.setting_entry = CTkEntry(self)
+        self.setting_entry.insert(0, settings_controller.get("nickname"))
         self.save_button = CTkButton(self, text="Save", command=self.save_setting)
 
         self.setting_entry.pack()
@@ -16,3 +17,4 @@ class SettingsFrame(CTkFrame):
     def save_setting(self):
         new_value = self.setting_entry.get()
         self.settings_controller.update_setting(new_value)
+

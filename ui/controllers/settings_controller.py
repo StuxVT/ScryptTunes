@@ -1,7 +1,10 @@
 import customtkinter as ctk
+import json
+from os import path
 
 from ui.models.settings_model import SettingsModel
 from ui.views.settings_view import SettingsView
+from constants import CONFIG_PATH
 
 
 class SettingsController:
@@ -9,13 +12,16 @@ class SettingsController:
         self.root = root
 
         # load settings here if they exist, else default and mark as default
-        self.settings_model = SettingsModel()
-        self.default = True
+        if path.exists(CONFIG_PATH):
+            with open(CONFIG_PATH) as config:
+                self.settings_model = SettingsModel(**json.load(config))
+        else:
+            self.settings_model = SettingsModel()
+            self.default = True
 
     def get(self, key):
         # todo, validate and handle errors
-        getattr(self.settings_model, key)
-        return True
+        return getattr(self.settings_model, key)
 
     def set(self, key, value):
         # todo, validate and handle errors

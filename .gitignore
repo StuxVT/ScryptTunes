@@ -28,3 +28,4 @@ logs/
 .cache
 config/.env
 /app.log
+/config/config.json
