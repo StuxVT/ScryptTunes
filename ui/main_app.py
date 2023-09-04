@@ -23,7 +23,7 @@ class MainApp(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)
 
         # init other stuff
-        self.settings_controller = SettingsController()
+        self.settings_controller = SettingsController(self)
         self.bot_model = BotModel()
         self.bot_controller = BotController(self.bot_model)
 
