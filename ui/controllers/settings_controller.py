@@ -28,6 +28,10 @@ class SettingsController:
         setattr(self.settings_model, key, value)
         return True
 
+    def save_settings(self):
+        with open(CONFIG_PATH, "w") as json_file:
+            json.dump(self.settings_model.model_dump(), json_file, indent=4)
+
     def show_settings_window(self):
         x_offset, y_offset = map(int, self.root.geometry().split('+')[1:3])
         SettingsView(self, geometry=f"{400}x{200}+{x_offset}+{y_offset}").grab_set()  # grab focus until closed
