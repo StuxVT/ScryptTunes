@@ -8,5 +8,5 @@
   "channel_points_reward": "",
   "spotify_client_id": "",
   "spotify_secret": "",
-  "spotify_redirect_uri": ""
+  "spotify_redirect_uri": "http://localhost:8080"
 }
