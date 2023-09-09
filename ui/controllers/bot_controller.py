@@ -17,7 +17,11 @@ class BotController:
             logging.info("Bot already started")
 
     def stop(self):
-        pass
+        # todo: this functionally works but is not correct and causes errors
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.stop_async())
+        loop.close()
 
     async def stop_async(self):
         await self.bot.close()
