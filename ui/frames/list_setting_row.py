@@ -5,7 +5,7 @@ from ui.frames.list_input import ListInput
 
 # TODO: the only making this different from text_setting_row is the nested list setting, these need parent
 class ListSettingRow(CTkFrame):
-    def __init__(self, parent, setting_name, setting_description, initial_value):
+    def __init__(self, parent, setting_name: str, setting_description: str, initial_value: list):
         super().__init__(parent)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=2)

@@ -1,6 +1,5 @@
-from customtkinter import CTkFrame, CTkEntry, CTkButton
+from customtkinter import CTkFrame, CTkButton
 
-from ui.frames.list_input import ListInput
 from ui.frames.list_setting_row import ListSettingRow
 from ui.frames.text_setting_row import TextSettingRow
 

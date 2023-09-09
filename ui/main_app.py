@@ -4,7 +4,6 @@ import customtkinter as ctk
 # local
 from ui.controllers.bot_controller import BotController
 from ui.controllers.settings_controller import SettingsController
-from ui.models.bot_model import BotModel
 from ui.views.main_view import MainView
 
 ctk.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
@@ -24,8 +23,7 @@ class MainApp(ctk.CTk):
 
         # init other stuff
         self.settings_controller = SettingsController(self)
-        self.bot_model = BotModel()
-        self.bot_controller = BotController(self.bot_model)
+        self.bot_controller = BotController()
 
         # start main app
         MainView(self, self.bot_controller, self.settings_controller).show()

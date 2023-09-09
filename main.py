@@ -8,7 +8,7 @@ def setup_logging():
     max_log_size = 1 * 1024 * 1024  # 1 MB
 
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
             RichHandler(),

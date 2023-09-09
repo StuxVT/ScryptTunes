@@ -13,12 +13,12 @@ from bot.blacklists import read_json, write_json, is_blacklisted
 
 class Bot(commands.Bot):
     def __init__(self):
-        with open("config/config.json") as config_file: ## todo: this is messy
-                config = json.load(config_file)
+        with open("config/config.json") as config_file:  ## todo: this is messy
+            config = json.load(config_file)
 
         super().__init__(
-            token=os.environ.get("TOKEN"),
-            client_id=os.environ.get("client_id"),
+            token=config.get("token"),
+            client_id=config.get("client_id"),
             nick=config["nickname"],
             prefix=config["prefix"],
             initial_channels=config["channels"],
@@ -29,8 +29,8 @@ class Bot(commands.Bot):
 
         self.sp = spotipy.Spotify(
             auth_manager=SpotifyOAuth(
-                client_id=os.environ.get("spotify_client_id"),
-                client_secret=os.environ.get("spotify_secret"),
+                client_id=config.get("spotify_client_id"),
+                client_secret=config.get("spotify_secret"),
                 redirect_uri="http://localhost:8080",
                 scope=[
                     "user-modify-playback-state",
@@ -42,8 +42,7 @@ class Bot(commands.Bot):
         )
 
         self.URL_REGEX = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s(" \
-                    r")<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
-
+                         r")<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
 
     async def event_ready(self):
         logging.info("\n" * 100)
@@ -153,6 +152,7 @@ class Bot(commands.Bot):
         sec_total = int(data["item"]["duration_ms"] / (1000) % 60)
         time_total = f"{min_total} mins, {sec_total} secs"
 
+        logging.info(f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
         await ctx.send(
             f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
         )
@@ -175,6 +175,7 @@ class Bot(commands.Bot):
 
             songs.append(song["track"]["name"] + " - " + song_artists)
 
+        logging.info("Recently Played: " + " | ".join(songs))
         await ctx.send("Recently Played: " + " | ".join(songs))
 
     @commands.command(name="songrequest", aliases=["sr", "addsong"])
@@ -193,7 +194,7 @@ class Bot(commands.Bot):
             else:
                 await self.chat_song_request(ctx, song, song_uri, album=False)
         except Exception as e:
-            await ctx.send(f"NYAA BRAIN HURT!!!!!!!!! ----- ERROR: {e}")
+            logging.error(f"{e}")
             await ctx.send(f"@{ctx.author.name}, spotify links only, or just type out the song/artist names please!")
 
     # @commands.command(name="skip")
@@ -221,6 +222,7 @@ class Bot(commands.Bot):
         the logic should still work iwth using the spotipy library, so thats why I'm keeping it, but don't do an API request
         - like this.
     """
+
     # async def album_request(self, ctx, song):
     #     song = song.replace("spotify:album:", "")
     #     ALBUM_URL = f"https://api.spotify.com/v1/albums/{song}?market=US"
@@ -239,6 +241,7 @@ class Bot(commands.Bot):
     async def chat_song_request(self, ctx, song, song_uri, album: bool):
         blacklisted_users = read_json("blacklist_user")["users"]
         if ctx.author.name.lower() in blacklisted_users:
+            logging.warning(f"Blacklisted user @{ctx.author.name} attempted request: Song:{song} - URI:{song_uri}")
             await ctx.send("You are blacklisted from requesting songs.")
         else:
             jscon = read_json("blacklist")
@@ -256,11 +259,10 @@ class Bot(commands.Bot):
                     with url_request.urlopen('https://noembed.com/embed?url=' + song_uri) as url:
                         data = json.load(url)
                         title, author = data['title'], data['author_name']
+                    logging.info(f"Youtube Link Detected <{song_uri}> - Searching song name on Spotify as fallback")
                     await ctx.send(f"Youtube Link Detected - Searching song name on Spotify as fallback")
                     await self.chat_song_request(ctx, f'{title} {author}', song_uri=None, album=False)
                     return
-
-
 
             song_id = song_uri.replace("spotify:track:", "")
 
@@ -273,13 +275,14 @@ class Bot(commands.Bot):
 
             if song_uri != "not found":
                 if song_id in jscon["blacklist"]:
-                    await ctx.send("That song is blacklisted.")
+                    logging.warning(f"User @{ctx.author.name} requested blacklisted song: {song_id}")
+                    await ctx.send(f"@{ctx.author.name} That song is blacklisted.")
 
                 elif duration > 17:
-                    await ctx.send("Send a shorter song please! :)")
+                    await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
                 else:
                     self.sp.add_to_queue(song_uri)
+                    logging.info(f"Song successfully added to queue: ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ]")
                     await ctx.send(
                         f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                     )
-
