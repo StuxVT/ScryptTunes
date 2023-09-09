@@ -3,8 +3,9 @@
 #### Also please dont look at my UI code i wrote this at like 4am oh god its so bad
 
 ## todo
-- GUI
+- run with OBS start? maybe set this up with installer
 - run as executable (terminal is hard for some)
+- define some form of interface for custom input frames to standardize retrieving/setting values and other common tasks
 
 ## wish-list
 (if i get time in the future)

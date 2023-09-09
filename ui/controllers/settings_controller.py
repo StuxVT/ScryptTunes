@@ -10,8 +10,9 @@ from constants import CONFIG_PATH
 class SettingsController:
     def __init__(self, root: ctk.CTk):
         self.root = root
+        self.default = False
 
-        # load settings here if they exist, else default and mark as default
+    # load settings here if they exist, else default and mark as default
         if path.exists(CONFIG_PATH):
             with open(CONFIG_PATH) as config:
                 self.settings_model = SettingsModel(**json.load(config))
