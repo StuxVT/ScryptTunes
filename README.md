@@ -18,6 +18,8 @@
 # todo for GUI
 - validate blacklist files exist, other state validations?
 - enable/disable buttons for start/stop bot respective to bot state (run event)
+- settings need to be in scrollable frame
+- set new size for settings view
 - hide sensitive data in settings view/frame
 - suppress/handle error when closing bot's asyncio loop
 - clean up bot code (maybe try out the SonarLint plugin)
