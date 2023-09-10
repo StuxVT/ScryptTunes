@@ -20,3 +20,6 @@
 - suppress/handle error when closing bot's asyncio loop
 - clean up bot code (maybe try out the SonarLint plugin)
 - create a useful readme like a good boy (challenge: impossible)
+
+## stretch goal todos for today
+- annotations(decorator)  for RBAC on bot commands?
