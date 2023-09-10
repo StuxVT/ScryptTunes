@@ -23,7 +23,7 @@ class MainApp(ctk.CTk):
 
         # init other stuff
         self.settings_controller = SettingsController(self)
-        self.bot_controller = BotController()
+        self.bot_controller = BotController(self)
 
         # start main app
         MainView(self, self.bot_controller, self.settings_controller).show()
