@@ -1,6 +1,6 @@
+import asyncio
 import logging
 import threading
-import asyncio
 
 from bot.scrypt_tunes import Bot
 

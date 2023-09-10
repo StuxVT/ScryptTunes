@@ -11,3 +11,10 @@
 (if i get time in the future)
 - local browser source for queue visualization
 - maybe implement the above into a twitch panel/plugin?
+
+
+# todo for GUI
+- validate blacklist files exist, change bot to read new location if necessary
+- enable/disable buttons for start/stop bot respective to bot state (run event)
+- hide sensitive data in settings view/frame
+- suppress/handle error when closing bot's asyncio loop
