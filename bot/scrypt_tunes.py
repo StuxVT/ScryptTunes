@@ -25,7 +25,7 @@ class Bot(commands.Bot):
         )
 
         self.token = os.environ.get("SPOTIFY_AUTH")
-        self.version = "0.1"
+        self.version = "0.2"
 
         self.sp = spotipy.Spotify(
             auth_manager=SpotifyOAuth(
@@ -46,7 +46,7 @@ class Bot(commands.Bot):
 
     async def event_ready(self):
         logging.info("\n" * 100)
-        logging.info(f"TwitchTunes ({self.version}) Ready, logged in as: {self.nick}")
+        logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
 
     def is_owner(self, ctx):
         return ctx.author.id == "640348450"

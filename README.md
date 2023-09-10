@@ -14,7 +14,9 @@
 
 
 # todo for GUI
-- validate blacklist files exist, change bot to read new location if necessary
+- validate blacklist files exist, other state validations?
 - enable/disable buttons for start/stop bot respective to bot state (run event)
 - hide sensitive data in settings view/frame
 - suppress/handle error when closing bot's asyncio loop
+- clean up bot code (maybe try out the SonarLint plugin)
+- create a useful readme like a good boy (challenge: impossible)
