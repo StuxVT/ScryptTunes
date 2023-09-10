@@ -11,6 +11,8 @@
 (if i get time in the future)
 - local browser source for queue visualization
 - maybe implement the above into a twitch panel/plugin?
+- bot code is "await" soup... make it actually async
+- lots of "common code" possible inside bot, like permission checks
 
 
 # todo for GUI
