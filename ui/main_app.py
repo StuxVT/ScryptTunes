@@ -34,6 +34,6 @@ class MainApp(ctk.CTk):
         try:
             self.bot_controller.stop()
         except RuntimeError:
-            # bot loop already closed
-            pass
+            pass  # bot loop already closed
+
         self.destroy()
