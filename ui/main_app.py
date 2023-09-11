@@ -31,5 +31,9 @@ class MainApp(ctk.CTk):
         MainView(self, self.bot_controller, self.settings_controller).show()
 
     def cleanup(self):
-        self.bot_controller.stop()
+        try:
+            self.bot_controller.stop()
+        except RuntimeError:
+            # bot loop already closed
+            pass
         self.destroy()
