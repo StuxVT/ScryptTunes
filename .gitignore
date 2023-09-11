@@ -27,3 +27,7 @@ logs/
 # Project-Related
 .cache
 config/.env
+/app.log
+/config/config.json
+/config/blacklist.json
+/config/blacklist_user.json
