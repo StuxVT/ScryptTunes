@@ -152,7 +152,8 @@ class Bot(commands.Bot):
         sec_total = int(data["item"]["duration_ms"] / (1000) % 60)
         time_total = f"{min_total} mins, {sec_total} secs"
 
-        logging.info(f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
+        logging.info(
+            f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
         await ctx.send(
             f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
         )
@@ -194,6 +195,7 @@ class Bot(commands.Bot):
             else:
                 await self.chat_song_request(ctx, song, song_uri, album=False)
         except Exception as e:
+            # todo: ctx.send different messages based on error type/contents
             logging.error(f"{e}")
             await ctx.send(f"@{ctx.author.name}, spotify links only, or just type out the song/artist names please!")
 
@@ -282,7 +284,8 @@ class Bot(commands.Bot):
                     await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
                 else:
                     self.sp.add_to_queue(song_uri)
-                    logging.info(f"Song successfully added to queue: ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ]")
+                    logging.info(
+                        f"Song successfully added to queue: ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ]")
                     await ctx.send(
                         f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                     )

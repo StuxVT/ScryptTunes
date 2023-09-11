@@ -9,6 +9,7 @@
 
 ## wish-list
 (if i get time in the future)
+- output ETA until your song
 - local browser source for queue visualization
 - maybe implement the above into a twitch panel/plugin?
 - bot code is "await" soup... make it actually async
@@ -16,13 +17,11 @@
 - prevent repeat-song spam
 - dont spam logs with nonexistant commands
 - flame certain users based on username (juzen, lum)
+- properly handle asyncio loop closure in bot controller
 
 
 # todo for GUI
 - create steb by step for setup
-- validate blacklist files exist, other state validations?
-  - fix error message on state invalid
-- enable/disable buttons for start/stop bot respective to bot state (run event)
 - settings need to be in scrollable frame
 - set new size for settings view
 - hide sensitive data in settings view/frame
