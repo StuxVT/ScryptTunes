@@ -88,4 +88,4 @@ class SettingsFrame(CTkFrame):
         self.settings_controller.set('spotify_secret', self.spotify_secret.get())
         self.settings_controller.set('spotify_redirect_uri', self.spotify_redirect_uri.get())
 
-        self.settings_controller.save_settings()
+        self.settings_controller.save_config()

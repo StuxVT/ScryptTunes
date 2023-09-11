@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class SettingsModel(BaseModel):
+class Config(BaseModel):
     nickname: str = ""
     prefix: str = "!"
     channels: list = [""]

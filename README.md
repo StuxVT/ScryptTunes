@@ -13,10 +13,15 @@
 - maybe implement the above into a twitch panel/plugin?
 - bot code is "await" soup... make it actually async
 - lots of "common code" possible inside bot, like permission checks
+- prevent repeat-song spam
+- dont spam logs with nonexistant commands
+- flame certain users based on username (juzen, lum)
 
 
 # todo for GUI
+- create steb by step for setup
 - validate blacklist files exist, other state validations?
+  - fix error message on state invalid
 - enable/disable buttons for start/stop bot respective to bot state (run event)
 - settings need to be in scrollable frame
 - set new size for settings view
