@@ -2,7 +2,7 @@ from customtkinter import CTkFrame, CTkLabel, CTkEntry
 
 
 class TextSettingRow(CTkFrame):
-    def __init__(self, parent, setting_name, setting_description, initial_value):
+    def __init__(self, parent, setting_name, setting_description, initial_value, hidden=False):
         super().__init__(parent)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=2)
@@ -19,7 +19,10 @@ class TextSettingRow(CTkFrame):
         widget_frame = CTkFrame(self)
         widget_frame.grid(row=0, column=1, sticky="ew")
 
-        self.text_setting = CTkEntry(widget_frame)
+        self.show = ''
+        if hidden:
+            self.show = '*'
+        self.text_setting = CTkEntry(widget_frame, show=self.show)
         self.text_setting.insert(0, initial_value)
         self.text_setting.pack()
 

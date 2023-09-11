@@ -11,6 +11,7 @@ class SettingsFrame(CTkFrame):
         self.settings_controller = settings_controller
 
         self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)  # Configure row 0 to expand vertically
 
         # Nickname
         self.nickname_row = TextSettingRow(self, setting_name="Nickname",
@@ -33,19 +34,22 @@ class SettingsFrame(CTkFrame):
         # Token
         self.token_row = TextSettingRow(self, setting_name="Token",
                                         setting_description="sum kinda token",
-                                        initial_value=settings_controller.get("token"))
+                                        initial_value=settings_controller.get("token"),
+                                        hidden=True)
         self.token_row.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
 
         # Client Id
         self.client_id_row = TextSettingRow(self, setting_name="client_id",
                                             setting_description="sum kinda token",
-                                            initial_value=settings_controller.get("client_id"))
+                                            initial_value=settings_controller.get("client_id"),
+                                            hidden=True)
         self.client_id_row.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
 
         # client_secret
         self.client_secret = TextSettingRow(self, setting_name="client_secret",
                                             setting_description="sum kinda token",
-                                            initial_value=settings_controller.get("client_secret"))
+                                            initial_value=settings_controller.get("client_secret"),
+                                            hidden=True)
         self.client_secret.grid(row=5, column=0, padx=10, pady=5, sticky="ew")
 
         # channel_points_reward
@@ -57,19 +61,22 @@ class SettingsFrame(CTkFrame):
         # spotify_client_id
         self.spotify_client_id = TextSettingRow(self, setting_name="spotify_client_id",
                                                 setting_description="sum kinda token",
-                                                initial_value=settings_controller.get("spotify_client_id"))
+                                                initial_value=settings_controller.get("spotify_client_id"),
+                                                hidden=True)
         self.spotify_client_id.grid(row=7, column=0, padx=10, pady=5, sticky="ew")
 
         # spotify_secret
         self.spotify_secret = TextSettingRow(self, setting_name="spotify_secret",
                                              setting_description="sum kinda token",
-                                             initial_value=settings_controller.get("spotify_secret"))
+                                             initial_value=settings_controller.get("spotify_secret"),
+                                             hidden=True)
         self.spotify_secret.grid(row=8, column=0, padx=10, pady=5, sticky="ew")
 
         # spotify_redirect_uri
         self.spotify_redirect_uri = TextSettingRow(self, setting_name="spotify_redirect_uri",
                                                    setting_description="sum kinda token",
-                                                   initial_value=settings_controller.get("spotify_redirect_uri"))
+                                                   initial_value=settings_controller.get("spotify_redirect_uri"),
+                                                   hidden=True)
         self.spotify_redirect_uri.grid(row=9, column=0, padx=10, pady=5, sticky="ew")
 
         # Save Settings

@@ -61,4 +61,4 @@ class SettingsController:
 
     def show_settings_window(self):
         x_offset, y_offset = map(int, self.root.geometry().split('+')[1:3])
-        SettingsView(self, geometry=f"{400}x{200}+{x_offset}+{y_offset}").grab_set()  # grab focus until closed
+        SettingsView(self, geometry=f"{800}x{600}+{x_offset}+{y_offset}").grab_set()  # grab focus until closed

@@ -10,8 +10,13 @@ class SettingsView(ctk.CTkToplevel):
         self.grid_rowconfigure(0, weight=1)  # Configure row 0 to expand vertically
         self.grid_columnconfigure(0, weight=1)
 
-        self.settings_frame = SettingsFrame(self, settings_controller)
-        self.settings_frame.grid(row=0, column=0, sticky="ew")
+        self.scroll_frame = ctk.CTkScrollableFrame(self)
+        self.scroll_frame.grid_rowconfigure(0, weight=1)  # Configure row 0 to expand vertically
+        self.scroll_frame.grid_columnconfigure(0, weight=1)
+        self.scroll_frame.grid(row=0, column=0, sticky="nsew")
+
+        self.settings_frame = SettingsFrame(self.scroll_frame, settings_controller)
+        self.settings_frame.grid(row=0, column=0, sticky="nsew")
 
     def show(self):
         self.settings_frame.pack()
