@@ -25,5 +25,11 @@ class MainApp(ctk.CTk):
         self.settings_controller = SettingsController(self)
         self.bot_controller = BotController(self)
 
+        self.protocol("WM_DELETE_WINDOW", self.cleanup)
+
         # start main app
         MainView(self, self.bot_controller, self.settings_controller).show()
+
+    def cleanup(self):
+        self.bot_controller.stop()
+        self.destroy()
