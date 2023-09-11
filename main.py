@@ -1,5 +1,6 @@
 import logging
 import subprocess
+import sys
 from logging.handlers import RotatingFileHandler
 
 
@@ -17,6 +18,18 @@ def setup_logging():
 
 
 def main():
+    setup_logging()
+    logging.info("Application started")
+
+    root = MainApp()
+    root.mainloop()
+
+
+def install_requirements():
+    subprocess.run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+
+
+if __name__ == "__main__":
     # only import deps after insuring installed
     try:
         from rich.logging import RichHandler
@@ -26,16 +39,4 @@ def main():
         from rich.logging import RichHandler
         from ui.main_app import MainApp
 
-    setup_logging()
-    logging.info("Application started")
-
-    root = MainApp()
-    root.mainloop()
-
-
-def install_requirements():
-    subprocess.run(["pip", "install", "-r", "requirements.txt"])
-
-
-if __name__ == "__main__":
     main()
