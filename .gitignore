@@ -33,6 +33,8 @@ config/.env
 /config/blacklist_user.json
 
 # Bild files
-/main.spec
 /build/*
 /build/main/
+/dist/
+/dist/main.exe
+/main.spec
