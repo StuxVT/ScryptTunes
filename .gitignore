@@ -31,3 +31,8 @@ config/.env
 /config/config.json
 /config/blacklist.json
 /config/blacklist_user.json
+
+# Bild files
+/main.spec
+/build/*
+/build/main/
