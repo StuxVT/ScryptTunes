@@ -28,7 +28,9 @@ jobs:
           echo $CERTIFICATE_BASE64 | base64 --decode > certificate.pfx
 
     - name: Sign the executable
-      run: SignTool sign /f certificate.pfx /p ${{ secrets.CERT_PASSWORD }} /tr 'http://timestamp.digicert.com' ./dist/main.exe
+      env:
+        CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+      run: SignTool sign /f certificate.pfx /p "%CERT_PASSWORD%" /tr 'http://timestamp.digicert.com' ./dist/main.exe
 
     - name: Rename Artifact
       run: mv ./dist/main.exe ./dist/ScryptTunes.exe
