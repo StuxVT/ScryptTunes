@@ -2,7 +2,7 @@ name: Build and Sign
 on:
   push:
     branches:
-      - main
+      - gh-actions-test
     
 jobs:
   build:
@@ -35,16 +35,25 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Create release and tag with next version number
-        VERSION=$(gh release list --json version --limit 1 | jq -r '.[0].version' | awk -F. '{$NF++; print}' OFS='.')
-        echo "Next version is $VERSION"
-        RELEASE_ID=$(gh release create $VERSION ./dist/ScryptTunes.exe -d -t "Release $VERSION" --json id | jq -r '.id')
-        echo "Created release with ID $RELEASE_ID"
-        echo "release_id=$RELEASE_ID" >> $GITHUB_ENV
+        # Get latest release version
+        $latestVersion = gh release list --json version --limit 1 | ConvertFrom-Json | Select-Object -ExpandProperty version
+
+        # Increment version
+        $versionArray = $latestVersion.Split(".")
+        $versionArray[-1] = [int]$versionArray[-1] + 1
+        $nextVersion = $versionArray -join "."
+        Write-Host "Next version is $nextVersion"
+
+        # Create release
+        $releaseId = gh release create $nextVersion ./dist/ScryptTunes.exe -d -t "Release $nextVersion" --json id | ConvertFrom-Json | Select-Object -ExpandProperty id
+        Write-Host "Created release with ID $releaseId"
+
+        # Set release ID for next step
+        echo "release_id=$releaseId" | Out-File -FilePath $env:GITHUB_ENV -Append
         
-    - name: Upload Artifact
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run:
-        gh release upload ${{ steps.release.outputs.id }} ./dist/ScryptTunes.py
+    # - name: Upload Artifact
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   run:
+    #     gh release upload ${{ steps.release.outputs.id }} ./dist/ScryptTunes.py
 
