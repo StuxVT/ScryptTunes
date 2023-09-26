@@ -2,7 +2,8 @@ name: Build and Sign
 on: 
   push:
     tags:
-    - '*'
+      - '*'
+    
 jobs:
   build:
     runs-on: windows-latest
