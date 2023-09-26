@@ -21,14 +21,13 @@ jobs:
         requirements: requirements.txt
         options: --onefile, --noconsole
 
-    - name: Code sign a file with pfx certificate
-      uses: Dana-Prajea/code-sign-action@v4
+    - name: Code sign a file
+      uses: dlemstra/code-sign-action@v1
       with:
         certificate: '${{ secrets.SIGNING_KEY }}'
         password: '${{ secrets.CERT_PASSWORD }}'
-        certificatename: '${{ secrets.CERTNAME }}'
-        folder: './dist/main.exe'
-            
+        files:
+          './dist/main.exe'
 
     - name: Rename Artifact
       run: mv ./dist/main.exe ./dist/ScryptTunes.exe
