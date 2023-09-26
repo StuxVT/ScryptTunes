@@ -15,7 +15,7 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 3. Place the file somewhere safe, so you can find it easily before you stream!
 
 ## Run the Bot
-1. Just double-click ScryptTunes.exe!
+1. Just double-click ScryptTunes.exe and click start! (After configuring settings, of course)
 
 ## Setup
 1. Open ScryptTunes and click the "Settings" button.
