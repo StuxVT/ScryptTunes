@@ -1,4 +1,4 @@
-# ScryptTunes: A Simple Guide for Windows Users
+# ScryptTunes
 
 Welcome to ScryptTunes! This application allows you to control your Spotify playlist through Twitch chat commands. This guide will walk you through the installation and setup process, step-by-step.
 
