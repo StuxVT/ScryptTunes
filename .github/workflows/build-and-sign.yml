@@ -7,7 +7,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
+    permissions:
+      contents: write
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4.1.0
@@ -30,21 +32,23 @@ jobs:
     - name: Rename Artifact
       run: mv ./dist/main.exe ./dist/ScryptTunes.exe
 
-    - name: Create Release
-      id: release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Get version from file
+      id: version
       run: |
-        # Create release and tag with next version number
-        VERSION=$(gh release list --json version --limit 1 | jq -r '.[0].version' | awk -F. '{$NF++; print}' OFS='.')
-        echo "Next version is $VERSION"
-        RELEASE_ID=$(gh release create $VERSION ./dist/ScryptTunes.exe -d -t "Release $VERSION" --json id | jq -r '.id')
-        echo "Created release with ID $RELEASE_ID"
-        echo "release_id=$RELEASE_ID" >> $GITHUB_ENV
+        $version = Get-Content -Path VERSION -Raw
+        echo "::set-output name=version::$version"
+
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "./dist/ScryptTunes.exe"
+        skipIfReleaseExists: True
+        tag: ${{ steps.version.outputs.version }}
         
-    - name: Upload Artifact
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run:
-        gh release upload ${{ steps.release.outputs.id }} ./dist/ScryptTunes.py
+      
+        
+    # - name: Upload Artifact
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   run:
+    #     gh release upload ${{ steps.release.outputs.id }} ./dist/ScryptTunes.py
 
