@@ -31,8 +31,16 @@ jobs:
     - name: Rename Artifact
       run: mv ./dist/main.exe ./dist/ScryptTunes.exe
 
-    - name: Create Release
-      uses: ncipollo/release-action@v1.13.0
+    - name: release
+      uses: google-github-actions/release-please-action@v3.1.2
+      id: release
       with:
-        artifacts: "./dist/ScryptTunes.exe"
+        release-type: python
+        
+    - name: Upload Artifact
+      if: ${{ steps.release.outputs.release_created }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run:
+        gh release upload ${{ steps.release.outputs.tag_name }} ./dist/ScryptTunes.py
 
