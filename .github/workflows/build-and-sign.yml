@@ -1,0 +1,41 @@
+name: Build and Sign
+
+on: workflow_dispatch
+# on:
+#   push:
+#     branches:
+#       - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Build with PyInstaller
+      run: pyinstaller --onefile --noconsole main.py
+
+    - name: Decode and Create PFX File
+      run: echo ${{ secrets.CERT_PFX_BASE64 }} | base64 -d > certificate.pfx
+
+    - name: Sign the executable
+      run: SignTool sign /f certificate.pfx /p ${{ secrets.CERT_PASSWORD }} /tr 'http://timestamp.digicert.com' ./dist/main.exe
+
+    - name: Rename Artifact
+      run: mv ./dist/main.exe ./dist/ScryptTunes.exe
+
+    - name: Create Release
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "./dist/ScryptTunes.exe"
+
