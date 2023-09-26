@@ -2,7 +2,7 @@ name: Build and Sign
 on:
   push:
     branches:
-      - gh-actions-test
+      - main
     
 jobs:
   build:
