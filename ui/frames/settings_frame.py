@@ -15,66 +15,66 @@ class SettingsFrame(CTkFrame):
 
         # Nickname
         self.nickname_row = TextSettingRow(self, setting_name="Nickname",
-                                           setting_description="idk what this does",
+                                           setting_description="The username of your bot account",
                                            initial_value=settings_controller.get("nickname"))
         self.nickname_row.grid(row=0, column=0, padx=10, pady=5, sticky="ew")
 
         # Prefix
         self.prefix_row = TextSettingRow(self, setting_name="Prefix",
-                                         setting_description="Indicates a chat command for this bot",
+                                         setting_description="Text that goes before your bot command",
                                          initial_value=settings_controller.get("prefix"))
         self.prefix_row.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
 
         # Channels
         self.channels_row = ListSettingRow(self, setting_name="Channels",
-                                           setting_description="idk what this does",
+                                           setting_description="List of channels for your bot to look for commands",
                                            initial_value=settings_controller.get("channels"))
         self.channels_row.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
 
         # Token
         self.token_row = TextSettingRow(self, setting_name="Token",
-                                        setting_description="sum kinda token",
+                                        setting_description="Twitch OAuth Token",
                                         initial_value=settings_controller.get("token"),
                                         hidden=True)
         self.token_row.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
 
         # Client Id
         self.client_id_row = TextSettingRow(self, setting_name="client_id",
-                                            setting_description="sum kinda token",
+                                            setting_description="Twitch Client ID",
                                             initial_value=settings_controller.get("client_id"),
                                             hidden=True)
         self.client_id_row.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
 
         # client_secret
         self.client_secret = TextSettingRow(self, setting_name="client_secret",
-                                            setting_description="sum kinda token",
+                                            setting_description="Twitch Client Secret",
                                             initial_value=settings_controller.get("client_secret"),
                                             hidden=True)
         self.client_secret.grid(row=5, column=0, padx=10, pady=5, sticky="ew")
 
         # channel_points_reward
         self.channel_points_reward = TextSettingRow(self, setting_name="channel_points_reward",
-                                                    setting_description="sum kinda token",
+                                                    setting_description="(Optional) Name of your song request redeem",
                                                     initial_value=settings_controller.get("channel_points_reward"))
         self.channel_points_reward.grid(row=6, column=0, padx=10, pady=5, sticky="ew")
 
         # spotify_client_id
         self.spotify_client_id = TextSettingRow(self, setting_name="spotify_client_id",
-                                                setting_description="sum kinda token",
+                                                setting_description="Spotify Client ID",
                                                 initial_value=settings_controller.get("spotify_client_id"),
                                                 hidden=True)
         self.spotify_client_id.grid(row=7, column=0, padx=10, pady=5, sticky="ew")
 
         # spotify_secret
         self.spotify_secret = TextSettingRow(self, setting_name="spotify_secret",
-                                             setting_description="sum kinda token",
+                                             setting_description="Spotify Client Secret",
                                              initial_value=settings_controller.get("spotify_secret"),
                                              hidden=True)
         self.spotify_secret.grid(row=8, column=0, padx=10, pady=5, sticky="ew")
 
         # spotify_redirect_uri
         self.spotify_redirect_uri = TextSettingRow(self, setting_name="spotify_redirect_uri",
-                                                   setting_description="sum kinda token",
+                                                   setting_description="Redirect URL configured in Spotify dev portal",
                                                    initial_value=settings_controller.get("spotify_redirect_uri"),
                                                    hidden=True)
         self.spotify_redirect_uri.grid(row=9, column=0, padx=10, pady=5, sticky="ew")
