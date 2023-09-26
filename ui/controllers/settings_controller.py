@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import json
+import keyring
 from os import path
 
 import constants
@@ -31,12 +32,12 @@ class SettingsController:
             self.save_user_blacklist()
 
         # load settings here if they exist, else default and mark as default
-        if path.exists(constants.CONFIG_PATH):
-            with open(constants.CONFIG_PATH) as config:
-                self.config_model = Config(**json.load(config))
-        else:
+        config = keyring.get_password("com.stux.ai.scrypttunes", "com.stux.ai.scrypttunes")
+        if not config:
             self.config_model = Config()
             self.save_config()
+        else:
+            self.config_model = Config(**json.loads(config))
 
     def get(self, key):
         # todo, validate and handle errors
@@ -48,8 +49,12 @@ class SettingsController:
         return True
 
     def save_config(self):
-        with open(constants.CONFIG_PATH, "w") as json_file:
-            json.dump(self.config_model.model_dump(), json_file, indent=4)
+        config = self.config_model.model_dump()
+        keyring.set_password(
+            password=json.dumps(config),
+            service_name="com.stux.ai.scrypttunes",
+            username="com.stux.ai.scrypttunes"
+        )
 
     def save_user_blacklist(self):
         with open(constants.USER_BLACKLIST_PATH, "w") as json_file:
