@@ -3,18 +3,18 @@
 Welcome to ScryptTunes! This application allows you to control your Spotify playlist through Twitch chat commands. This guide will walk you through the installation and setup process, step-by-step.
 
 ## Table of Contents
-1. [Downloading ScryptTunes](#downloading-scrypttunes)
-2. [Run the Bot](#run-the-bot)
+1. [Download](#download)
+2. [Run](#run)
 3. [Setup](#setup)
 4. [Setting Up Spotify](#setting-up-spotify)
 5. [Setting Up Twitch](#setting-up-twitch)
 
-## Downloading ScryptTunes
+## Download
 1. Go to the latest release page here: [ScrypTunes Latest Release](https://github.com/StuxVT/ScryptTunes/releases/latest)
 2. Download "ScryptTunes.exe"
 3. Place the file somewhere safe, so you can find it easily before you stream!
 
-## Run the Bot
+## Run
 1. Just double-click ScryptTunes.exe and click start! (After configuring settings, of course)
 
 ## Setup
