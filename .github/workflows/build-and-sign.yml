@@ -1,9 +1,9 @@
 name: Build and Sign
 
-on: 
+on:
   push:
-    tags:
-    - '*'
+    branches:
+      - main
 
 jobs:
   build:
