@@ -22,7 +22,10 @@ jobs:
         options: --onefile, --noconsole
 
     - name: Decode and Create PFX File
-      run: echo ${{ secrets.SIGNING_KEY }} | base64 -d > certificate.pfx
+      env:
+          CERTIFICATE_BASE64: ${{ secrets.SIGNING_KEY }}
+      run: |
+          echo $CERTIFICATE_BASE64 | base64 --decode > certificate.pfx
 
     - name: Sign the executable
       run: SignTool sign /f certificate.pfx /p ${{ secrets.CERT_PASSWORD }} /tr 'http://timestamp.digicert.com' ./dist/main.exe
