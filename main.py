@@ -1,7 +1,10 @@
 import logging
+import os
 import subprocess
 import sys
 from logging.handlers import RotatingFileHandler
+
+import constants
 
 
 def setup_logging():
@@ -30,6 +33,10 @@ def install_requirements():
 
 
 if __name__ == "__main__":
+    os.makedirs(constants.SCRYPTTUNES_DATA, exist_ok=True)
+    os.makedirs(constants.SCRYPTTUNES_DATA_CONFIG, exist_ok=True)
+    os.makedirs(constants.SCRYPTTUNES_DATA_CONFIG_DEFAULT, exist_ok=True)
+
     # only import deps after insuring installed
     try:
         from rich.logging import RichHandler

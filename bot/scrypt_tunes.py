@@ -2,6 +2,7 @@ import json
 import os
 import re
 import logging
+import keyring
 
 from twitchio.ext import commands
 import spotipy
@@ -13,9 +14,7 @@ from bot.blacklists import read_json, write_json, is_blacklisted
 
 class Bot(commands.Bot):
     def __init__(self):
-        with open("config/config.json") as config_file:  ## todo: this is messy
-            config = json.load(config_file)
-
+        config = json.loads(keyring.get_password("com.stux.ai.scrypttunes", "com.stux.ai.scrypttunes"))
         super().__init__(
             token=config.get("token"),
             client_id=config.get("client_id"),
