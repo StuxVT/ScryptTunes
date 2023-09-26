@@ -1,8 +1,8 @@
 name: Build and Sign
-on: 
+on:
   push:
-    tags:
-      - '*'
+    branches:
+      - gh-actions-test
     
 jobs:
   build:
