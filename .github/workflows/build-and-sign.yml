@@ -32,6 +32,15 @@ jobs:
         CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
       run: SignTool sign /f certificate.pfx /p "%CERT_PASSWORD%" /tr 'http://timestamp.digicert.com' ./dist/main.exe
 
+    - name: Code sign a file with pfx certificate
+      uses: Dana-Prajea/code-sign-action@v4
+      with:
+        certificate: '${{ secrets.SIGNING_KEY }}'
+        password: '${{ secrets.CERT_PASSWORD }}'
+        certificatename: '${{ secrets.CERTNAME }}'
+        folder: './dist'
+            
+
     - name: Rename Artifact
       run: mv ./dist/main.exe ./dist/ScryptTunes.exe
 
