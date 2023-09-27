@@ -11,7 +11,7 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 
 ## Download
 1. Go to the latest release page here: [ScrypTunes Latest Release](https://github.com/StuxVT/ScryptTunes/releases/latest)
-2. Download "ScryptTunes.exe"
+2. Download `ScryptTunes.exe`
 3. Place the file somewhere safe, so you can find it easily before you stream!
 
 ## Run
