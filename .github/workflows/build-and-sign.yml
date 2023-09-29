@@ -28,6 +28,16 @@ jobs:
       - name: Build with Nuitka
         run: python -m nuitka --standalone --enable-plugin=tk-inter --output-dir="build" --output-filename="ScryptTunes.exe" .\main.py
 
+      - name: Build
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          script-name: main.py
+          standalone: true
+          enable-plugins: tk-inter
+          output-dir: build
+          output-file: ScryptTunes.exe
+
       - name: Install NSIS
         run: |
           iwr -useb get.scoop.sh -outfile 'install.ps1'
