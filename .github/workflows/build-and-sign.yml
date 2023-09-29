@@ -3,8 +3,7 @@ on:
   push:
     branches:
       - main
-      - pre
-
+    
 jobs:
   build:
     runs-on: windows-latest
@@ -12,58 +11,44 @@ jobs:
       contents: write
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.1.0
+    - name: Checkout code
+      uses: actions/checkout@v4.1.0
 
-      - name: Build
-        uses: Nuitka/Nuitka-Action@main
-        with:
-          nuitka-version: main
-          script-name: main.py
-          standalone: true
-          enable-plugins: tk-inter
-          output-dir: build
-          output-file: ScryptTunes.exe
+    - name: Build with PyInstaller
+      uses: sayyid5416/pyinstaller@v1
+      with:
+        spec: main.py
+        requirements: requirements.txt
+        options: --onefile, --noconsole
 
-      - name: Install NSIS
-        run: |
-          iwr -useb get.scoop.sh -outfile 'install.ps1'
-          .\install.ps1 -RunAsAdmin
-          scoop update
-          scoop bucket add extras
-          scoop install nsis
+    - name: Code sign a file
+      uses: dlemstra/code-sign-action@v1
+      with:
+        certificate: '${{ secrets.SIGNING_KEY }}'
+        password: '${{ secrets.CERT_PASSWORD }}'
+        files:
+          './dist/main.exe'
 
-      - name: Create Installer
-        run: makensis installer.nsi
+    - name: Rename Artifact
+      run: mv ./dist/main.exe ./dist/ScryptTunes.exe
 
-      - name: Code sign a file
-        uses: dlemstra/code-sign-action@v1
-        with:
-          certificate: '${{ secrets.SIGNING_KEY }}'
-          password: '${{ secrets.CERT_PASSWORD }}'
-          files: './build/ScryptTunesInstaller.exe'
+    - name: Get version from file
+      id: version
+      run: |
+        $version = Get-Content -Path VERSION -Raw
+        echo "::set-output name=version::$version"
 
-      - name: Get version from file
-        id: version
-        run: |
-          $version = Get-Content -Path VERSION -Raw
-          echo "::set-output name=version::$version"
-
-      - name: Release for main branch
-        if: github.ref == 'refs/heads/main'
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "./build/ScryptTunesInstaller.exe"
-          skipIfReleaseExists: True
-          tag: ${{ steps.version.outputs.version }}
-          makeLatest: true
-
-      - name: Release for pre branch
-        if: github.ref == 'refs/heads/pre'
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "./build/ScryptTunesInstaller.exe"
-          skipIfReleaseExists: True
-          tag: pre-${{ steps.version.outputs.version }}
-          prerelease: true
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "./dist/ScryptTunes.exe"
+        skipIfReleaseExists: True
+        tag: ${{ steps.version.outputs.version }}
+        
+      
+        
+    # - name: Upload Artifact
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   run:
+    #     gh release upload ${{ steps.release.outputs.id }} ./dist/ScryptTunes.py
 

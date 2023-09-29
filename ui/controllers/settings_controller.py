@@ -1,7 +1,6 @@
-import os.path
-
 import customtkinter as ctk
 import json
+import keyring
 from os import path
 
 import constants
@@ -17,29 +16,28 @@ class SettingsController:
         self.default = False
 
         # ensure song blacklist exists
-        if path.exists(constants.SONG_BLACKLIST):
-            with open(constants.SONG_BLACKLIST) as config:
+        if path.exists(constants.SONG_BLACKLIST_PATH):
+            with open(constants.SONG_BLACKLIST_PATH) as config:
                 self.blacklist_model = SongBlacklist(**json.load(config))
         else:
             self.song_blacklist = SongBlacklist()
             self.save_song_blacklist()
 
         # ensure user blacklist exists
-        if path.exists(constants.USER_BLACKLIST):
-            with open(constants.USER_BLACKLIST) as config:
+        if path.exists(constants.USER_BLACKLIST_PATH):
+            with open(constants.USER_BLACKLIST_PATH) as config:
                 self.user_blacklist = UserBlacklist(**json.load(config))
         else:
             self.user_blacklist = UserBlacklist()
             self.save_user_blacklist()
 
         # load settings here if they exist, else default and mark as default
-
-        if os.path.exists(constants.CONFIG):
-            with open(constants.CONFIG) as config:
-                self.config_model = Config(**json.load(config))
-        else:
+        config = keyring.get_password("com.stux.ai.scrypttunes", "com.stux.ai.scrypttunes")
+        if not config:
             self.config_model = Config()
             self.save_config()
+        else:
+            self.config_model = Config(**json.loads(config))
 
     def get(self, key):
         # todo, validate and handle errors
@@ -51,15 +49,19 @@ class SettingsController:
         return True
 
     def save_config(self):
-        with open(constants.CONFIG, "w") as json_file:
-            json.dump(self.config_model.model_dump(), json_file, indent=4)
+        config = self.config_model.model_dump()
+        keyring.set_password(
+            password=json.dumps(config),
+            service_name="com.stux.ai.scrypttunes",
+            username="com.stux.ai.scrypttunes"
+        )
 
     def save_user_blacklist(self):
-        with open(constants.USER_BLACKLIST, "w") as json_file:
+        with open(constants.USER_BLACKLIST_PATH, "w") as json_file:
             json.dump(self.user_blacklist.model_dump(), json_file, indent=4)
 
     def save_song_blacklist(self):
-        with open(constants.SONG_BLACKLIST, "w") as json_file:
+        with open(constants.SONG_BLACKLIST_PATH, "w") as json_file:
             json.dump(self.song_blacklist.model_dump(), json_file, indent=4)
 
     def show_settings_window(self):
