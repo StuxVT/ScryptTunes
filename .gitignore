@@ -26,15 +26,12 @@ logs/
 
 # Project-Related
 .cache
-config/.env
 /app.log
-/config/config.json
-/config/blacklist.json
-/config/blacklist_user.json
+/blacklist.dat
+/blacklist_user.dat
+/config.dat
 
 # Bild files
 /build/*
-/build/main/
-/dist/
-/dist/main.exe
+/build/
 /main.spec

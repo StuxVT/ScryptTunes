@@ -1,10 +1,7 @@
 import logging
-import os
 import subprocess
 import sys
 from logging.handlers import RotatingFileHandler
-
-import constants
 
 
 def setup_logging():
@@ -15,7 +12,7 @@ def setup_logging():
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
             RichHandler(),
-            RotatingFileHandler("app.log", maxBytes=max_log_size, backupCount=5)  # Rotate after reaching max_log_size
+            # RotatingFileHandler("app.log", maxBytes=max_log_size, backupCount=5)  # Rotate after reaching max_log_size
         ]
     )
 
@@ -33,10 +30,6 @@ def install_requirements():
 
 
 if __name__ == "__main__":
-    os.makedirs(constants.SCRYPTTUNES_DATA, exist_ok=True)
-    os.makedirs(constants.SCRYPTTUNES_DATA_CONFIG, exist_ok=True)
-    os.makedirs(constants.SCRYPTTUNES_DATA_CONFIG_DEFAULT, exist_ok=True)
-
     # only import deps after insuring installed
     try:
         from rich.logging import RichHandler
