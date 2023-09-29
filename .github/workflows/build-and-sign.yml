@@ -1,10 +1,9 @@
 name: Build and Sign
-#on:
-#  push:
-#    branches:
-#      - main
-
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
+      - pre
 
 jobs:
   build:
@@ -53,8 +52,21 @@ jobs:
           $version = Get-Content -Path VERSION -Raw
           echo "::set-output name=version::$version"
 
-      - uses: ncipollo/release-action@v1
+      - name: Release for main branch
+        if: github.ref == 'refs/heads/main'
+        uses: ncipollo/release-action@v1
         with:
           artifacts: "./build/ScryptTunesInstaller.exe"
           skipIfReleaseExists: True
           tag: ${{ steps.version.outputs.version }}
+          makeLatest: true
+
+      - name: Release for pre branch
+        if: github.ref == 'refs/heads/pre'
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "./build/ScryptTunesInstaller.exe"
+          skipIfReleaseExists: True
+          tag: pre-${{ steps.version.outputs.version }}
+          prerelease: true
+
