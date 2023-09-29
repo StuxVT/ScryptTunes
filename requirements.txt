@@ -1,4 +1,5 @@
 customtkinter~=5.2.0
+nuitka~=1.8.3
 keyring~=24.2.0
 spotipy~=2.23.0
 twitchio~=2.7.0
