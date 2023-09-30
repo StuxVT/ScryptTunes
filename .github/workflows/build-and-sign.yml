@@ -34,6 +34,7 @@ jobs:
           windows-icon-from-ico: icon.ico
           output-dir: build
           output-file: ScryptTunes.exe
+          include-data-files: icon.ico=icon.ico
 
       - name: sign exe
         uses: dlemstra/code-sign-action@v1
