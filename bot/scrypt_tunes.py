@@ -9,7 +9,7 @@ from spotipy.oauth2 import SpotifyOAuth
 from urllib import request as url_request
 
 from bot.blacklists import read_json, write_json, is_blacklisted
-from constants import CONFIG
+from constants import CONFIG, CACHE
 
 
 class Bot(commands.Bot):
@@ -32,6 +32,7 @@ class Bot(commands.Bot):
                 client_id=config.get("spotify_client_id"),
                 client_secret=config.get("spotify_secret"),
                 redirect_uri="http://localhost:8080",
+                cache_path=CACHE,
                 scope=[
                     "user-modify-playback-state",
                     "user-read-currently-playing",
