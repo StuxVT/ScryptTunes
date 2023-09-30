@@ -1,10 +1,12 @@
 import os
 
-nuitka_binary_dir = os.path.dirname(__file__)
+SCRYPTTUNES_DATA = os.path.join(os.getenv('LOCALAPPDATA'), "Stux\\ScryptTunes\\")
+SCRYPTTUNES_DATA_CONFIG = os.path.join(os.getenv('LOCALAPPDATA'), "Stux\\ScryptTunes\\config")
 
-# Configs
-SONG_BLACKLIST = os.path.join(nuitka_binary_dir, "blacklist.dat")
-USER_BLACKLIST = os.path.join(nuitka_binary_dir, "blacklist_user.dat")
-CONFIG = os.path.join(nuitka_binary_dir, 'config.dat')
+
+SONG_BLACKLIST = os.path.join(SCRYPTTUNES_DATA_CONFIG, "blacklist.json")
+USER_BLACKLIST = os.path.join(SCRYPTTUNES_DATA_CONFIG, "blacklist_user.json")
+CONFIG = os.path.join(SCRYPTTUNES_DATA_CONFIG, "config.json")
+
 
 
