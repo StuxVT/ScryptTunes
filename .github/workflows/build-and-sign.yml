@@ -28,6 +28,7 @@ jobs:
           nuitka-version: main
           script-name: main.py
           standalone: true
+          disable-console: true
           enable-plugins: tk-inter
           output-dir: build
           output-file: ScryptTunes.exe
