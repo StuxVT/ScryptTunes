@@ -1,4 +1,5 @@
 # global
+import ctypes
 import customtkinter as ctk
 
 # local
@@ -16,6 +17,9 @@ class MainApp(ctk.CTk):
         super().__init__()
 
         self.title("ScryptTunes")
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('ai.stux.scrypttunes')
+        self.iconbitmap('icon.ico')
+
         self.geometry(f"{800}x{500}")
 
         self.grid_rowconfigure(0, weight=1)

@@ -4,6 +4,7 @@
 
 ; General settings
 Outfile "build\ScryptTunesInstaller.exe"
+Icon "icon.ico"
 InstallDir $PROGRAMFILES\ScryptTunes
 
 ; UI settings
