@@ -15,7 +15,6 @@ class MainApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("ScryptTunes")
         self.geometry(f"{800}x{500}")
 
         self.grid_rowconfigure(0, weight=1)

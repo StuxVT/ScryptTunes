@@ -2,7 +2,6 @@ import json
 import os
 import re
 import logging
-import keyring
 
 from twitchio.ext import commands
 import spotipy
@@ -10,11 +9,13 @@ from spotipy.oauth2 import SpotifyOAuth
 from urllib import request as url_request
 
 from bot.blacklists import read_json, write_json, is_blacklisted
+from constants import CONFIG, CACHE
 
 
 class Bot(commands.Bot):
     def __init__(self):
-        config = json.loads(keyring.get_password("com.stux.ai.scrypttunes", "com.stux.ai.scrypttunes"))
+        with open(CONFIG) as config_file:
+            config = json.load(config_file)
         super().__init__(
             token=config.get("token"),
             client_id=config.get("client_id"),
@@ -31,6 +32,7 @@ class Bot(commands.Bot):
                 client_id=config.get("spotify_client_id"),
                 client_secret=config.get("spotify_secret"),
                 redirect_uri="http://localhost:8080",
+                cache_path=CACHE,
                 scope=[
                     "user-modify-playback-state",
                     "user-read-currently-playing",

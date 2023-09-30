@@ -1,14 +1,31 @@
+# todo: add separate functionality for each blacklist types
+# global
 import json
-import os
+
+# local
+from constants import USER_BLACKLIST, SONG_BLACKLIST
+
 
 def read_json(filename):
-    with open(f"config/{filename}.json", "r") as file:
-        data = json.load(file)
+    if filename == "blacklist":
+        file = SONG_BLACKLIST
+    else:
+        file = USER_BLACKLIST
+
+    with open(file, "r") as f:
+        data = json.load(f)
     return data
 
+
 def write_json(data, filename):
-    with open(f"config/{filename}.json", "w") as file:
-        json.dump(data, file, indent=4)
+    if filename == "blacklist":
+        file = SONG_BLACKLIST
+    else:
+        file = USER_BLACKLIST
+
+    with open(file, "w") as f:
+        json.dump(data, f, indent=4)
+
 
 def is_blacklisted(user_name):
     '''

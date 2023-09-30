@@ -1,7 +1,8 @@
+import ctypes
 import logging
-import os
 import subprocess
 import sys
+import os
 from logging.handlers import RotatingFileHandler
 
 import constants
@@ -15,7 +16,7 @@ def setup_logging():
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
             RichHandler(),
-            RotatingFileHandler("app.log", maxBytes=max_log_size, backupCount=5)  # Rotate after reaching max_log_size
+            RotatingFileHandler(os.path.join(constants.SCRYPTTUNES_DATA, "app.log"), maxBytes=max_log_size, backupCount=5)  # Rotate after reaching max_log_size
         ]
     )
 
@@ -25,6 +26,9 @@ def main():
     logging.info("Application started")
 
     root = MainApp()
+    root.title("ScryptTunes")
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('ai.stux.scrypttunes')
+    root.iconbitmap('icon.ico')
     root.mainloop()
 
 
@@ -35,7 +39,6 @@ def install_requirements():
 if __name__ == "__main__":
     os.makedirs(constants.SCRYPTTUNES_DATA, exist_ok=True)
     os.makedirs(constants.SCRYPTTUNES_DATA_CONFIG, exist_ok=True)
-    os.makedirs(constants.SCRYPTTUNES_DATA_CONFIG_DEFAULT, exist_ok=True)
 
     # only import deps after insuring installed
     try:
