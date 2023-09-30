@@ -1,6 +1,5 @@
 # global
 import ctypes
-
 import customtkinter as ctk
 
 # local
