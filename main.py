@@ -1,3 +1,4 @@
+import ctypes
 import logging
 import subprocess
 import sys
@@ -15,7 +16,7 @@ def setup_logging():
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
             RichHandler(),
-            # RotatingFileHandler("app.log", maxBytes=max_log_size, backupCount=5)  # Rotate after reaching max_log_size
+            RotatingFileHandler(os.path.join(constants.SCRYPTTUNES_DATA, "app.log"), maxBytes=max_log_size, backupCount=5)  # Rotate after reaching max_log_size
         ]
     )
 
@@ -25,6 +26,9 @@ def main():
     logging.info("Application started")
 
     root = MainApp()
+    root.title("ScryptTunes")
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('ai.stux.scrypttunes')
+    root.iconbitmap('icon.ico')
     root.mainloop()
 
 

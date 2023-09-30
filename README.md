@@ -47,6 +47,7 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 ---
 ## Dev Notes
 ### Build Locally
-`python -m nuitka --standalone --enable-plugin=tk-inter --output-dir="build" --output-filename="ScryptTunes.exe" .\main.py`
+`python -m nuitka --standalone --enable-plugin=tk-inter --include-data-file=icon.ico=icon.ico 
+--output-dir="build" --output-filename="ScryptTunes.exe" .\main.py`
 ### Create Installer
 `makensis installer.nsi`

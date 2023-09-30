@@ -1,5 +1,4 @@
 # global
-import ctypes
 import customtkinter as ctk
 
 # local
@@ -15,10 +14,6 @@ ctk.deactivate_automatic_dpi_awareness()
 class MainApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-
-        self.title("ScryptTunes")
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('ai.stux.scrypttunes')
-        self.iconbitmap('icon.ico')
 
         self.geometry(f"{800}x{500}")
 
