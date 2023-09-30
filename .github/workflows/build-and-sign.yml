@@ -30,7 +30,7 @@ jobs:
           standalone: true
           disable-console: true
           enable-plugins: tk-inter
-          icon: icon.ico
+          windows-icon-from-ico: icon.ico
           output-dir: build
           output-file: ScryptTunes.exe
 
