@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class Config(BaseModel):
     nickname: str = ""
     prefix: str = "!"
-    channels: list = [""]
+    channel: str = ""
     token: str = ""
     client_id: str = ""
     client_secret: str = ""

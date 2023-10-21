@@ -21,7 +21,7 @@ class Bot(commands.Bot):
             client_id=config.get("client_id"),
             nick=config["nickname"],
             prefix=config["prefix"],
-            initial_channels=config["channels"],
+            initial_channels=[config["channel"]],
         )
 
         self.token = os.environ.get("SPOTIFY_AUTH")
