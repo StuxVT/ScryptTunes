@@ -14,20 +14,24 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 3. ScryptTunes will now show up in your start menu and as a desktop shortcut
 
 ## Setup
-### General
+### 1. General
 1. Open ScryptTunes and click the "Settings" button.
 2. Fill in the following fields:
-    - **Nickname**: Enter the name of the bot/account to which the Twitch OAuth token belongs.
+    - **Nickname**: Name of bot account.
+      - If you don't use a separate twitch account for your bot, just put your channel name here.
     - **(Optional) Prefix**: Enter the command indicator for Twitch chat (e.g., `!`).
-    - **Channels**: Enter a list of Twitch channels where the bot should watch for commands. At least add your own channel.
+    - **Channel**: Channel to listen for commands from
     - **Token**: Get your Twitch OAuth token from [Twitch Chat OAuth Password Generator](https://twitchapps.com/tmi/).
+      - This is a safe resource that generates the token locally on the browser. Don't share it with anyone.
 
-### Setting Up Spotify
+![](https://cdn.discordapp.com/attachments/933618197213622272/1165117190459101184/image.png?ex=6545aef1&is=653339f1&hm=41cb6634efb36fe66acddfd7e79152523c3755d9759e2cfc735f4b67f3a382fa&)
+
+### 2. Setting Up Spotify
 1. Visit the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/applications).
 2. Click "Create an App" and fill in the necessary details.
 3. Once the app is created, you'll see a "Client ID" and "Client Secret". Enter these in the Settings view.
 
-### Setting Up Twitch
+### 3. Setting Up Twitch
 1. Visit the [Twitch Developer Console](https://dev.twitch.tv/console).
 2. Click "Create an App" and fill in the necessary details.
 3. Once the app is created, you'll see a "Client ID" and "Client Secret". Enter these in the Settings view as well.
@@ -46,8 +50,9 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 
 ---
 ## Dev Notes
+You can just run main.py, or build locally if necessary. Feel free to ask questions in DMs on my
+[Twitter](https://twitter.com/stuxvt) or [Discord](http://discord.stux.ai) but please google first.
 ### Build Locally
-`python -m nuitka --standalone --enable-plugin=tk-inter --include-data-file=icon.ico=icon.ico 
---output-dir="build" --output-filename="ScryptTunes.exe" .\main.py`
+`python -m nuitka --standalone --enable-plugin=tk-inter --include-data-file=icon.ico=icon.ico --output-dir="build" --output-filename="ScryptTunes.exe" .\main.py`
 ### Create Installer
 `makensis installer.nsi`

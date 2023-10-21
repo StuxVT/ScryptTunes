@@ -4,7 +4,7 @@ from customtkinter import CTkFrame, CTkLabel, CTkEntry
 class TextSettingRow(CTkFrame):
     def __init__(self, parent, setting_name, setting_description, initial_value, hidden=False):
         super().__init__(parent)
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(0, minsize=300)  # todo: dynamic adjustment somehow based on context?
         self.columnconfigure(1, weight=2)
 
         label_frame = CTkFrame(self)
