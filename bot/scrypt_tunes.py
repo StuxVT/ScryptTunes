@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import requests as req
 import logging
 
 from twitchio.ext import commands
@@ -198,7 +199,7 @@ class Bot(commands.Bot):
         except Exception as e:
             # todo: ctx.send different messages based on error type/contents
             logging.error(f"{e}")
-            await ctx.send(f"@{ctx.author.name}, spotify links only, or just type out the song/artist names please!")
+            await ctx.send(f"@{ctx.author.name}, there was an error with your request!")
 
     # @commands.command(name="skip")
     # async def skip_song_command(self, ctx):
@@ -241,7 +242,7 @@ class Bot(commands.Bot):
     #             await ctx.send(f"Album Requested! {data['name']}")
     #             return
 
-    async def chat_song_request(self, ctx, song, song_uri, album: bool):
+    async def chat_song_request(self, ctx, song, song_uri, album: bool, requests=None):
         blacklisted_users = read_json("blacklist_user")["users"]
         if ctx.author.name.lower() in blacklisted_users:
             logging.warning(f"Blacklisted user @{ctx.author.name} attempted request: Song:{song} - URI:{song_uri}")
@@ -255,7 +256,20 @@ class Bot(commands.Bot):
 
             elif re.match(self.URL_REGEX, song_uri):
                 if 'spotify' in song_uri:
-                    data = self.sp.track(song_uri)
+                    if '.link/' in song_uri:  # todo: better way to handle this?
+                        ctx.send(f'{ctx.author} Mobile link detected, attempting to get full url.')  # todo: verify this is sending?????
+                        req_data = req.get(
+                            song_uri,
+                            allow_redirects=True,
+                            headers={
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, '
+                                              'like Gecko) Chrome/119.0.0.0 Safari/537.36'
+                            }
+
+                        )
+                        data = self.sp.track(req_data.url)
+                    else:
+                        data = self.sp.track(song_uri)
                     song_uri = data["uri"]
                     song_uri = song_uri.replace("spotify:track:", "")
                 if 'youtube' in song_uri or 'youtu.be' in song_uri:
