@@ -8,7 +8,7 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 3. [Setting Up Spotify](#setting-up-spotify)
 4. [Setting Up Twitch](#setting-up-twitch)
 
-## Install
+ ## Install
 1. Go to the latest release page here: [ScrypTunes Latest Release](https://github.com/StuxVT/ScryptTunes/releases/latest)
 2. Download `ScryptTunesInstaller.exe` and run it
 3. ScryptTunes will now show up in your start menu and as a desktop shortcut
@@ -29,12 +29,27 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 ### 2. Setting Up Spotify
 1. Visit the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/applications).
 2. Click "Create an App" and fill in the necessary details.
-3. Once the app is created, you'll see a "Client ID" and "Client Secret". Enter these in the Settings view.
+
+![](https://media.discordapp.net/attachments/1057578958029328426/1175910820920709120/image.png?ex=656cf34b&is=655a7e4b&hm=fe42ffadc477e71d8c4ea63c787193ea086c026dbffc530efd960c0ac38e0039&=&width=747&height=672)
+
+3. Once the app is created, click settings.
+
+![](https://cdn.discordapp.com/attachments/1057578958029328426/1175914946756870254/image.png?ex=656cf722&is=655a8222&hm=64cc0b93351770261aa4b3a50bd98aea40fd77797dee3b20a81c7b9bdb0313b7&)
+
+4. You'll see a "Client ID" and "Client Secret". Enter these in the Settings view of ScryptTunes.
+
+![](https://media.discordapp.net/attachments/1057578958029328426/1175915900482895892/image.png?ex=656cf806&is=655a8306&hm=998e7415032993d39538ed423672044b168ab7ef3a2c6673846efeb7c0f87af4&=&width=747&height=232)
+
 
 ### 3. Setting Up Twitch
 1. Visit the [Twitch Developer Console](https://dev.twitch.tv/console).
-2. Click "Create an App" and fill in the necessary details.
-3. Once the app is created, you'll see a "Client ID" and "Client Secret". Enter these in the Settings view as well.
+2. Click "Applications" >> "Register Your Application" and fill in the necessary details.
+
+![](https://cdn.discordapp.com/attachments/1057578958029328426/1175918725602480238/image.png?ex=656cfaa7&is=655a85a7&hm=24698461db8b1340263c9bb5180301c67fdd0cc97f0071fd437ebbf1879747dd&)
+
+4. Once the app is created, you'll see a "Client ID" and "Client Secret". Enter these in the Settings view as well.
+
+![](https://cdn.discordapp.com/attachments/1057578958029328426/1175919816893280277/image.png?ex=656cfbab&is=655a86ab&hm=c71cf74a9dd9b98bfa2a9d90e2c9cc02110c63bdea0c611ae2817ea7a6a08a49&)
 
 ## Usage
 1. Start playing music on Spotify
