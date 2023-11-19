@@ -56,6 +56,7 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 ![](https://cdn.discordapp.com/attachments/1057578958029328426/1175919816893280277/image.png?ex=656cfbab&is=655a86ab&hm=c71cf74a9dd9b98bfa2a9d90e2c9cc02110c63bdea0c611ae2817ea7a6a08a49&)
 
 ### 4. App Settings
+### BE SURE TO CLICK SAVE
 Once finished, your app settings should look like this:
 ![](https://cdn.discordapp.com/attachments/1057578958029328426/1175921010713833482/image.png?ex=656cfcc8&is=655a87c8&hm=1dabaad81cd9b3592e815a3eb7a558c3394195b0b146c8fe840a3da45c3bea80&)
 
