@@ -47,7 +47,11 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 
 ![](https://cdn.discordapp.com/attachments/1057578958029328426/1175918725602480238/image.png?ex=656cfaa7&is=655a85a7&hm=24698461db8b1340263c9bb5180301c67fdd0cc97f0071fd437ebbf1879747dd&)
 
-4. Once the app is created, you'll see a "Client ID" and "Client Secret". Enter these in the Settings view as well.
+3. Click on "Manage" for your app
+
+![](https://cdn.discordapp.com/attachments/964264233103675413/1175922079326032012/image.png?ex=656cfdc7&is=655a88c7&hm=7fe6e2739bf653826ca68ffa28d9a351e4f2be55a1939ee5f8feae03ee207dbb&)
+
+4. You'll see a "Client ID" and "Client Secret". Enter these in the Settings view as well.
 
 ![](https://cdn.discordapp.com/attachments/1057578958029328426/1175919816893280277/image.png?ex=656cfbab&is=655a86ab&hm=c71cf74a9dd9b98bfa2a9d90e2c9cc02110c63bdea0c611ae2817ea7a6a08a49&)
 
