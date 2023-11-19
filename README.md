@@ -19,8 +19,8 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 2. Fill in the following fields:
     - **Nickname**: Name of bot account.
       - If you don't use a separate twitch account for your bot, just put your channel name here.
-    - **(Optional) Prefix**: Enter the command indicator for Twitch chat (e.g., `!`).
-    - **Channel**: Channel to listen for commands from
+    - **(Optional) Prefix**: Enter the command indicator for Twitch chat (e.g., `!`). 
+    - **Channel**: Channel to listen for commands from. (Very likely to be your twitch channel name)
     - **Token**: Get your Twitch OAuth token from [Twitch Chat OAuth Password Generator](https://twitchapps.com/tmi/).
       - This is a safe resource that generates the token locally on the browser. Don't share it with anyone.
 
