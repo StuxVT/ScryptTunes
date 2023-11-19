@@ -69,7 +69,7 @@ Once finished, your app settings should look like this:
 
 ## Credits
 ### `🎶` [TwitchTunes](https://github.com/mmattDonk/TwitchTunes)
-- I am using a customized version with various bugfixes and extra features (Like support for youtube links). 
+- I am using a customized version with various bugfixes and extra features (Like support for youtube links) as a placeholder for now. I plan on a full rewrite of the bot, but [mattDonk](https://github.com/mmattDonk) deserves credit for their incredible baseline I'm using as a starting point.  
    All credit goes to [mattDonk](https://github.com/mmattDonk) for the majority of the baseline bot.
 
 ---
