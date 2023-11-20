@@ -1,7 +1,7 @@
 import ctypes
 import logging
-import subprocess
-import sys
+from rich.logging import RichHandler
+from ui.main_app import MainApp
 import os
 from logging.handlers import RotatingFileHandler
 
@@ -32,21 +32,7 @@ def main():
     root.mainloop()
 
 
-def install_requirements():
-    subprocess.run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-
-
 if __name__ == "__main__":
     os.makedirs(constants.SCRYPTTUNES_DATA, exist_ok=True)
     os.makedirs(constants.SCRYPTTUNES_DATA_CONFIG, exist_ok=True)
-
-    # only import deps after insuring installed
-    try:
-        from rich.logging import RichHandler
-        from ui.main_app import MainApp
-    except ImportError:
-        install_requirements()
-        from rich.logging import RichHandler
-        from ui.main_app import MainApp
-
     main()
