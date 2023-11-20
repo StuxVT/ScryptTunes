@@ -5,8 +5,7 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 ## Table of Contents
 1. [Install](#install)
 2. [Setup](#setup)
-3. [Setting Up Spotify](#setting-up-spotify)
-4. [Setting Up Twitch](#setting-up-twitch)
+3. [Usage](#usage)
 
  ## Install
 1. Go to the latest release page here: [ScrypTunes Latest Release](https://github.com/StuxVT/ScryptTunes/releases/latest)
