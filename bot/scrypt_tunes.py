@@ -72,7 +72,7 @@ class Bot(commands.Bot):
 
     async def event_ready(self):
         if self.config.channel_points_reward:
-            # Set up TwitchAPI and PubSub for channel points
+            # Set up TwitchAPI Sub for Channel Point Redeems
             twitch = Twitch(self.config.client_id, self.config.client_secret)
             twitch.authenticate_app([])
             target_scope: list = [AuthScope.CHANNEL_READ_REDEMPTIONS]
@@ -83,13 +83,13 @@ class Bot(commands.Bot):
             user_id: str = twitch.get_users(logins=[self.config.channel])["data"][0]["id"]
 
             pubsub = PubSub(twitch)
-            uuid = pubsub.listen_channel_points(user_id, self.callback_channel_points)
+            uuid = pubsub.listen_channel_points(user_id, self.channel_point_event)
             pubsub.start()
 
         logging.info("\n" * 100)
         logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
 
-    def callback_channel_points(self, uuid, data):
+    def channel_point_event(self, uuid, data):
         if (
                 data["data"]["redemption"]["reward"]["title"].lower()
                 != self.config.channel_points_reward.lower()
@@ -101,10 +101,8 @@ class Bot(commands.Bot):
         if data["data"]["redemption"]["user"]["login"] in blacklisted_users:
             return
 
-        # custom context with data from twitch event
+        # Create fake context for injection into song request event
         websocket = self._connection
-
-        # Create a Chatter object
         chatter = Chatter(
             websocket=websocket,  # todo
             name=data["data"]["redemption"]["user"]["login"],
@@ -134,11 +132,12 @@ class Bot(commands.Bot):
             bot=self,
             prefix=self.config.prefix,
             command=self.songrequest_command,
-            args=[],  # You need to provide the list of arguments that were passed to the command
-            kwargs={},  # You need to provide the dictionary of keyword arguments that were passed to the command
-            valid=True,  # lmao @ twitchio what kind of validation is this?
+            args=[],  # n/a
+            kwargs={},  # n/a
+            valid=True,
             view=view
         )
+
         asyncio.run_coroutine_threadsafe(self.invoke(context=ctx), asyncio.get_event_loop())
 
     @commands.command(name="ping", aliases=["ding"])
