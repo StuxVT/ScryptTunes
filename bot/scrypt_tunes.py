@@ -1,4 +1,6 @@
 # Standard Library
+import asyncio
+import datetime
 import json
 import logging
 import os
@@ -14,27 +16,16 @@ from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.pubsub import PubSub
 from twitchAPI.twitch import Twitch
 from twitchAPI.types import AuthScope
+from twitchio import Message, Chatter, Channel
 from twitchio.ext import commands
+from twitchio.ext.commands import Context, Command
+from twitchio.ext.commands.stringparser import StringParser
+from twitchio.websocket import WSConnection
 
 # Local
 from bot.blacklists import is_blacklisted, read_json, write_json
 from constants import CACHE, CONFIG
 from ui.models.config import Config
-
-
-class Author:
-    def __init__(self, name):
-        self.name = name
-
-
-class FakeCTX:
-    def __init__(self, bot, channel, author_name):
-        self.bot = bot
-        self.channel = channel
-        self.author = Author(author_name)
-
-    async def send(self, message):
-        await self.bot.get_channel(self.channel).send(message)
 
 
 class Bot(commands.Bot):
@@ -80,9 +71,6 @@ class Bot(commands.Bot):
         )
 
     async def event_ready(self):
-        logging.info("\n" * 100)
-        logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
-
         if self.config.channel_points_reward:
             # Set up TwitchAPI and PubSub for channel points
             twitch = Twitch(self.config.client_id, self.config.client_secret)
@@ -98,6 +86,9 @@ class Bot(commands.Bot):
             uuid = pubsub.listen_channel_points(user_id, self.callback_channel_points)
             pubsub.start()
 
+        logging.info("\n" * 100)
+        logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
+
     def callback_channel_points(self, uuid, data):
         if (
                 data["data"]["redemption"]["reward"]["title"].lower()
@@ -109,16 +100,46 @@ class Bot(commands.Bot):
         blacklisted_users = read_json("blacklist_user")["users"]
         if data["data"]["redemption"]["user"]["login"] in blacklisted_users:
             return
-        # build fake ctx
-        fakectx = FakeCTX(
-            bot=self,
-            channel=self.config.channel,
-            author_name=data['data']['redemption']['user']['display_name']
-        )
-        self.songrequest_command(self, ctx=fakectx, song=song)
 
-    def is_owner(self, ctx):
-        return ctx.author.id == "640348450"
+        # custom context with data from twitch event
+        websocket = self._connection
+
+        # Create a Chatter object
+        chatter = Chatter(
+            websocket=websocket,  # todo
+            name=data["data"]["redemption"]["user"]["login"],
+            channel=data["data"]["redemption"]["channel_id"],
+            tags={
+                'user-id': data["data"]["redemption"]["user"]["id"],
+                'subscriber': '0',  # todo
+                'mod': '0',  # todo
+                'display-name': data["data"]["redemption"]["user"]["display_name"],
+                'color': '#000000',  # todo
+                'vip': '0',  # todo
+            }
+        )
+        message = Message(
+            content=song,
+            author=chatter,
+            channel=Channel(name=data["data"]["redemption"]["channel_id"], websocket=websocket),
+            tags={
+                'id': data["data"]["redemption"]["id"],
+                'tmi-sent-ts': datetime.datetime.now().timestamp() * 1000,
+            }
+        )
+        view = StringParser()
+        view.process_string(song)
+        ctx = Context(
+            message=message,
+            bot=self,
+            prefix=self.config.prefix,
+            command=self.songrequest_command,
+            args=[],  # You need to provide the list of arguments that were passed to the command
+            kwargs={},  # You need to provide the dictionary of keyword arguments that were passed to the command
+            valid=True,  # lmao @ twitchio what kind of validation is this?
+            view=view
+        )
+        asyncio.run_coroutine_threadsafe(self.invoke(context=ctx), asyncio.get_event_loop())
 
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
@@ -129,7 +150,7 @@ class Bot(commands.Bot):
     @commands.command(name="blacklistuser")
     async def blacklist_user(self, ctx, *, user: str):
         user = user.lower()
-        if ctx.author.is_mod or self.is_owner(ctx):
+        if ctx.author.is_mod:
             file = read_json("blacklist_user")
             if user not in file["users"]:
                 file["users"].append(user)
@@ -143,7 +164,7 @@ class Bot(commands.Bot):
     @commands.command(name="unblacklistuser")
     async def unblacklist_user(self, ctx, *, user: str):
         user = user.lower()
-        if ctx.author.is_mod or self.is_owner(ctx):
+        if ctx.author.is_mod:
             _file = read_json("blacklist_user")
             if user in _file["users"]:
                 _file["users"].remove(user)
@@ -156,7 +177,7 @@ class Bot(commands.Bot):
 
     @commands.command(name="blacklist", aliases=["blacklistsong", "blacklistadd"])
     async def blacklist_command(self, ctx, *, song_uri: str):
-        if ctx.author.is_mod or self.is_owner(ctx):
+        if ctx.author.is_mod:
             jscon = read_json("blacklist")
 
             song_uri = song_uri.replace("spotify:track:", "")
@@ -187,7 +208,7 @@ class Bot(commands.Bot):
         name="unblacklist", aliases=["unblacklistsong", "blacklistremove"]
     )
     async def unblacklist_command(self, ctx, *, song_uri: str):
-        if ctx.author.is_mod or self.is_owner(ctx):
+        if ctx.author.is_mod:
             jscon = read_json("blacklist")
 
             song_uri = song_uri.replace("spotify:track:", "")
@@ -274,7 +295,7 @@ class Bot(commands.Bot):
     #     await ctx.send(f":) 🎶 Skipping song...")
 
     # @commands.command(name="albumqueue")
-    #     if ctx.author.is_mod or ctx.author.is_subscriber or self.is_owner(ctx):
+    #     if ctx.author.is_mod or ctx.author.is_subscriber:
     # async def albumqueue_command(self, ctx, *, album: str):
     #         album_uri = None
 
