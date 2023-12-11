@@ -90,6 +90,7 @@ class Bot(commands.Bot):
         logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
 
     def channel_point_event(self, uuid, data):
+        # TODO: ctx.send not working when invoking song requests through redeem
         if (
                 data["data"]["redemption"]["reward"]["title"].lower()
                 != self.config.channel_points_reward.lower()
