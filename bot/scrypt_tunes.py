@@ -1,28 +1,47 @@
+# Standard Library
+import asyncio
+import datetime
 import json
+import logging
 import os
 import re
-import requests as req
-import logging
-
-from twitchio.ext import commands
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
 from urllib import request as url_request
 
-from bot.blacklists import read_json, write_json, is_blacklisted
-from constants import CONFIG, CACHE
+# Third-Party
+import requests as req
+import spotipy
+from pydantic import ValidationError
+from spotipy.oauth2 import SpotifyOAuth
+from twitchAPI.oauth import UserAuthenticator
+from twitchAPI.pubsub import PubSub
+from twitchAPI.twitch import Twitch
+from twitchAPI.types import AuthScope
+from twitchio import Message, Chatter, Channel
+from twitchio.ext import commands
+from twitchio.ext.commands import Context, Command
+from twitchio.ext.commands.stringparser import StringParser
+from twitchio.websocket import WSConnection
+
+# Local
+from bot.blacklists import is_blacklisted, read_json, write_json
+from constants import CACHE, CONFIG
+from ui.models.config import Config
 
 
 class Bot(commands.Bot):
     def __init__(self):
         with open(CONFIG) as config_file:
-            config = json.load(config_file)
+            config_data = json.load(config_file)
+        try:
+            self.config = Config(**config_data)
+        except ValidationError:
+            self.config = Config()
         super().__init__(
-            token=config.get("token"),
-            client_id=config.get("client_id"),
-            nick=config["nickname"],
-            prefix=config["prefix"],
-            initial_channels=[config["channel"]],
+            token=self.config.token,
+            client_id=self.config.client_id,
+            nick=self.config.nickname,
+            prefix=self.config.prefix,
+            initial_channels=[self.config.channel],
         )
 
         self.token = os.environ.get("SPOTIFY_AUTH")
@@ -30,8 +49,8 @@ class Bot(commands.Bot):
 
         self.sp = spotipy.Spotify(
             auth_manager=SpotifyOAuth(
-                client_id=config.get("spotify_client_id"),
-                client_secret=config.get("spotify_secret"),
+                client_id=self.config.spotify_client_id,
+                client_secret=self.config.spotify_secret,
                 redirect_uri="http://localhost:8080",
                 cache_path=CACHE,
                 scope=[
@@ -43,15 +62,84 @@ class Bot(commands.Bot):
             )
         )
 
-        self.URL_REGEX = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s(" \
-                         r")<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+        self.URL_REGEX = (
+            r"(?i)\b("
+            r"(?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)"
+            r"(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+"
+            r"(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|"
+            r"[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+        )
 
     async def event_ready(self):
+        if self.config.channel_points_reward:
+            # Set up TwitchAPI Sub for Channel Point Redeems
+            twitch = Twitch(self.config.client_id, self.config.client_secret)
+            twitch.authenticate_app([])
+            target_scope: list = [AuthScope.CHANNEL_READ_REDEMPTIONS]
+            auth = UserAuthenticator(twitch, target_scope, force_verify=False)
+            token, refresh_token = auth.authenticate()
+            twitch.set_user_authentication(token, target_scope, refresh_token)
+
+            user_id: str = twitch.get_users(logins=[self.config.channel])["data"][0]["id"]
+
+            pubsub = PubSub(twitch)
+            uuid = pubsub.listen_channel_points(user_id, self.channel_point_event)
+            pubsub.start()
+
         logging.info("\n" * 100)
         logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
 
-    def is_owner(self, ctx):
-        return ctx.author.id == "640348450"
+    def channel_point_event(self, uuid, data):
+        # TODO: ctx.send not working when invoking song requests through redeem
+        if (
+                data["data"]["redemption"]["reward"]["title"].lower()
+                != self.config.channel_points_reward.lower()
+        ):
+            return
+
+        song: str = data["data"]["redemption"]["user_input"]
+        blacklisted_users = read_json("blacklist_user")["users"]
+        if data["data"]["redemption"]["user"]["login"] in blacklisted_users:
+            return
+
+        # Create fake context for injection into song request event
+        websocket = self._connection
+        chatter = Chatter(
+            websocket=websocket,  # todo
+            name=data["data"]["redemption"]["user"]["login"],
+            channel=data["data"]["redemption"]["channel_id"],
+            tags={
+                'user-id': data["data"]["redemption"]["user"]["id"],
+                'subscriber': '0',  # todo
+                'mod': '0',  # todo
+                'display-name': data["data"]["redemption"]["user"]["display_name"],
+                'color': '#000000',  # todo
+                'vip': '0',  # todo
+            }
+        )
+        message = Message(
+            content=song,
+            author=chatter,
+            channel=Channel(name=data["data"]["redemption"]["channel_id"], websocket=websocket),
+            tags={
+                'id': data["data"]["redemption"]["id"],
+                'tmi-sent-ts': datetime.datetime.now().timestamp() * 1000,
+            }
+        )
+        view = StringParser()
+        view.process_string(song)
+        ctx = Context(
+            message=message,
+            bot=self,
+            prefix=self.config.prefix,
+            command=self.songrequest_command,
+            args=[],  # n/a
+            kwargs={},  # n/a
+            valid=True,
+            view=view
+        )
+
+        asyncio.run_coroutine_threadsafe(self.invoke(context=ctx), asyncio.get_event_loop())
 
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
@@ -62,7 +150,7 @@ class Bot(commands.Bot):
     @commands.command(name="blacklistuser")
     async def blacklist_user(self, ctx, *, user: str):
         user = user.lower()
-        if ctx.author.is_mod or self.is_owner(ctx):
+        if ctx.author.is_mod:
             file = read_json("blacklist_user")
             if user not in file["users"]:
                 file["users"].append(user)
@@ -76,7 +164,7 @@ class Bot(commands.Bot):
     @commands.command(name="unblacklistuser")
     async def unblacklist_user(self, ctx, *, user: str):
         user = user.lower()
-        if ctx.author.is_mod or self.is_owner(ctx):
+        if ctx.author.is_mod:
             _file = read_json("blacklist_user")
             if user in _file["users"]:
                 _file["users"].remove(user)
@@ -89,7 +177,7 @@ class Bot(commands.Bot):
 
     @commands.command(name="blacklist", aliases=["blacklistsong", "blacklistadd"])
     async def blacklist_command(self, ctx, *, song_uri: str):
-        if ctx.author.is_mod or self.is_owner(ctx):
+        if ctx.author.is_mod:
             jscon = read_json("blacklist")
 
             song_uri = song_uri.replace("spotify:track:", "")
@@ -120,7 +208,7 @@ class Bot(commands.Bot):
         name="unblacklist", aliases=["unblacklistsong", "blacklistremove"]
     )
     async def unblacklist_command(self, ctx, *, song_uri: str):
-        if ctx.author.is_mod or self.is_owner(ctx):
+        if ctx.author.is_mod:
             jscon = read_json("blacklist")
 
             song_uri = song_uri.replace("spotify:track:", "")
@@ -207,7 +295,7 @@ class Bot(commands.Bot):
     #     await ctx.send(f":) 🎶 Skipping song...")
 
     # @commands.command(name="albumqueue")
-    #     if ctx.author.is_mod or ctx.author.is_subscriber or self.is_owner(ctx):
+    #     if ctx.author.is_mod or ctx.author.is_subscriber:
     # async def albumqueue_command(self, ctx, *, album: str):
     #         album_uri = None
 
@@ -304,3 +392,4 @@ class Bot(commands.Bot):
                     await ctx.send(
                         f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                     )
+
