@@ -3,5 +3,6 @@ nuitka~=1.8.3
 spotipy~=2.23.0
 twitchio~=2.7.0
 rich~=13.5.2
-pydantic~=2.3.0
+pydantic~=2.4.0
 requests~=2.31.0
+aiohttp>=3.9.2 # not directly required, pinned by Snyk to avoid a vulnerability
