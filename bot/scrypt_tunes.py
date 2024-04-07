@@ -39,9 +39,38 @@ class Bot(commands.Bot):
                     "user-read-currently-playing",
                     "user-read-playback-state",
                     "user-read-recently-played",
+                    "playlist-read-private",
+                    "playlist-modify-private"
                 ],
             )
         )
+
+        # Get list of user playlists
+        playlists = []
+        res = self.sp.current_user_playlists(limit=50)
+        playlists.extend(res['items'])
+        while res['next']:
+            res = self.sp.next(res)
+            playlists.extend(res['items'])
+
+        # Check for bot playlist
+        playlist_exists = False
+        for playlist in playlists:
+            if playlist['href'] == config.spotify_playlist_href:
+                playlist_exists = True
+
+        # Create if not exists
+        if not playlist_exists:
+            new_playlist = self.sp.user_playlist_create(
+                user=self.sp.current_user()['id'],
+                name="ScryptTunes QueueList",
+                collaborative=False,
+                public=False,
+                description="Playlist for ScryptTunes bot to use as a Queue with bonus features"
+            )
+            # save playlist in config
+            config.spotify_playlist_href = new_playlist['href']
+
 
         self.URL_REGEX = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s(" \
                          r")<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
