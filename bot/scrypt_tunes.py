@@ -58,6 +58,7 @@ class Bot(commands.Bot):
         for playlist in playlists:
             if playlist['href'] == config.get("spotify_playlist_href"):
                 playlist_exists = True
+                self.playlist = playlist
 
         # Create if not exists
         if not playlist_exists:
@@ -70,6 +71,7 @@ class Bot(commands.Bot):
             )
             # save playlist in config
             config["spotify_playlist_href"] = new_playlist['href']
+            self.playlist = new_playlist
 
             # save config file
             with open(CONFIG, "w") as f:
@@ -330,7 +332,8 @@ class Bot(commands.Bot):
                 elif duration > 17:
                     await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
                 else:
-                    self.sp.add_to_queue(song_uri)
+                    song_id = song_uri.split(":")[-1]
+                    self.sp.playlist_add_items(self.playlist['id'], [song_id])
                     logging.info(
                         f"Song successfully added to queue: ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ]")
                     await ctx.send(
