@@ -56,7 +56,7 @@ class Bot(commands.Bot):
         # Check for bot playlist
         playlist_exists = False
         for playlist in playlists:
-            if playlist['href'] == config.spotify_playlist_href:
+            if playlist['href'] == config.get("spotify_playlist_href"):
                 playlist_exists = True
 
         # Create if not exists
@@ -69,8 +69,11 @@ class Bot(commands.Bot):
                 description="Playlist for ScryptTunes bot to use as a Queue with bonus features"
             )
             # save playlist in config
-            config.spotify_playlist_href = new_playlist['href']
+            config["spotify_playlist_href"] = new_playlist['href']
 
+            # save config file
+            with open(CONFIG, "w") as f:
+                json.dump(config, f, indent=4)
 
         self.URL_REGEX = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s(" \
                          r")<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
