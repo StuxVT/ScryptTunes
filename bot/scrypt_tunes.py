@@ -272,17 +272,14 @@ class Bot(commands.Bot):
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
         await ctx.send("!sr <song name + artist or Spotify URL> - "
-                 "Request a song to be added to the queue. "
-                 "Example: !sr Never Gonna Give You Up - Rick Astley")
+                       "Request a song to be added to the queue. "
+                       "Example: !sr Never Gonna Give You Up - Rick Astley")
 
     @commands.command(name="songrequest", aliases=["sr", "addsong"])
     async def songrequest_command(self, ctx, *, song: str = None):
 
         if not song:
-            await ctx.send("!sr <song name or Spotify URL> - "
-                           "Request a song to be added to the queue. "
-                           "Example: !sr Never Gonna Give You Up - Rick Astley")
-            return
+            return await self.help_command(ctx)
 
         try:
             song_uri = None
@@ -358,7 +355,8 @@ class Bot(commands.Bot):
             elif re.match(self.URL_REGEX, song_uri):
                 if 'spotify' in song_uri:
                     if '.link/' in song_uri:  # todo: better way to handle this?
-                        ctx.send(f'{ctx.author} Mobile link detected, attempting to get full url.')  # todo: verify this is sending?????
+                        ctx.send(
+                            f'{ctx.author} Mobile link detected, attempting to get full url.')  # todo: verify this is sending?????
                         req_data = req.get(
                             song_uri,
                             allow_redirects=True,
@@ -405,4 +403,3 @@ class Bot(commands.Bot):
                     await ctx.send(
                         f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                     )
-
