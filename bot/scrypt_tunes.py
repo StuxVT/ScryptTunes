@@ -269,8 +269,21 @@ class Bot(commands.Bot):
         logging.info("Recently Played: " + " | ".join(songs))
         await ctx.send("Recently Played: " + " | ".join(songs))
 
+    @commands.command(name="help", aliases=[])
+    async def help_command(self, ctx):
+        await ctx.send("!sr <song name + artist or Spotify URL> - "
+                 "Request a song to be added to the queue. "
+                 "Example: !sr Never Gonna Give You Up - Rick Astley")
+
     @commands.command(name="songrequest", aliases=["sr", "addsong"])
-    async def songrequest_command(self, ctx, *, song: str):
+    async def songrequest_command(self, ctx, *, song: str = None):
+
+        if not song:
+            await ctx.send("!sr <song name or Spotify URL> - "
+                           "Request a song to be added to the queue. "
+                           "Example: !sr Never Gonna Give You Up - Rick Astley")
+            return
+
         try:
             song_uri = None
 
