@@ -19,7 +19,7 @@ class CheckboxSettingRow(CTkFrame):
         widget_frame = CTkFrame(self)
         widget_frame.grid(row=0, column=1, sticky="ew")
         self.value = IntVar(value=initial_value)
-        self.check_setting = CTkCheckBox(widget_frame, variable=self.value, onvalue=1, offvalue=0)
+        self.check_setting = CTkCheckBox(widget_frame, variable=self.value, onvalue=1, offvalue=0, text="")
         self.check_setting.pack()
 
     def get(self):

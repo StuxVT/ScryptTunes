@@ -398,17 +398,18 @@ class Bot(commands.Bot):
                 if duration > 17:
                     return await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
 
-                if ctx.author in self.request_history:
-                    if (datetime.datetime.now() - self.request_history[ctx.author]["last_request_time"]).seconds < 300:
-                        return await ctx.send(f"@{ctx.author.name} You need to wait 10 minutes between requests!")
+                if self.config.rate_limit:
+                    if ctx.author in self.request_history:
+                        if (datetime.datetime.now() - self.request_history[ctx.author]["last_request_time"]).seconds < 300:
+                            return await ctx.send(f"@{ctx.author.name} You need to wait 10 minutes between requests!")
 
-                    self.request_history[ctx.author]["last_request_time"] = datetime.datetime.now()
-                    self.request_history[ctx.author]["last_requested_song_id"] = song_id
-                else:
-                    self.request_history[ctx.author] = {
-                        "last_request_time": datetime.datetime.now(),
-                        "last_requested_song_id": song_id
-                    }
+                        self.request_history[ctx.author]["last_request_time"] = datetime.datetime.now()
+                        self.request_history[ctx.author]["last_requested_song_id"] = song_id
+                    else:
+                        self.request_history[ctx.author] = {
+                            "last_request_time": datetime.datetime.now(),
+                            "last_requested_song_id": song_id
+                        }
 
                 self.sp.add_to_queue(song_uri)
                 logging.info(

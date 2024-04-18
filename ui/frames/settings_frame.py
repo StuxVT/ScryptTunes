@@ -26,10 +26,10 @@ class SettingsFrame(CTkFrame):
         self.prefix_row.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
 
         # Rate-limit checkbox
-        self.settings_checkbox = CheckboxSettingRow(self, setting_name="Rate Limit",
+        self.rate_limit_row = CheckboxSettingRow(self, setting_name="Rate Limit",
                                                     setting_description="Limit song requests to once every 5 minutes",
                                                     initial_value=settings_controller.get("rate_limit"))
-        self.prefix_row.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+        self.rate_limit_row.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
 
         # Watch-Channel
         self.channel_row = TextSettingRow(self, setting_name="Watch Channel",
@@ -92,5 +92,6 @@ class SettingsFrame(CTkFrame):
         self.settings_controller.set('channel_points_reward', self.channel_points_reward.get())
         self.settings_controller.set('spotify_client_id', self.spotify_client_id.get())
         self.settings_controller.set('spotify_secret', self.spotify_secret.get())
+        self.settings_controller.set('rate_limit', self.rate_limit_row.get())
 
         self.settings_controller.save_config()
