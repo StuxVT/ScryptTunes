@@ -28,5 +28,7 @@ class BotController:
 
     def _run(self):
         asyncio.set_event_loop(self.loop)
-        self.bot = self.loop.create_task(Bot().run())
+        self.bot = self.loop.create_task(
+            Bot(asyncio_loop=self.loop).run()
+        )
         self.loop.run_forever()

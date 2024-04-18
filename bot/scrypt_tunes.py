@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import re
@@ -14,7 +15,7 @@ from constants import CONFIG, CACHE
 
 
 class Bot(commands.Bot):
-    def __init__(self):
+    def __init__(self, asyncio_loop):
         with open(CONFIG) as config_file:
             config = json.load(config_file)
         super().__init__(
@@ -77,8 +78,39 @@ class Bot(commands.Bot):
             with open(CONFIG, "w") as f:
                 json.dump(config, f, indent=4)
 
+        # Start watching playlist for tracks to play
+        self.asyncio_loop = asyncio_loop
+        self.asyncio_loop.create_task(self.watch_playlist())
+
         self.URL_REGEX = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s(" \
                          r")<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+
+    async def watch_playlist(self):
+        # watch playlist for added songs
+        # while songs exist play them
+            # get a song to play (oldest one)
+            # wait remaining duration of song or 30 seconds whatever is shorter
+            # check if song ended
+                # if not wait again
+                # if yes remove song from playlist, watch next song
+        while True:
+            tracks = self.sp.playlist_items(self.playlist['id'], limit=1)
+
+            if tracks['items']:
+                track = tracks['items'][0]['track']
+                track_duration = track['duration_ms'] // 1000
+
+                self.sp.start_playback(uris=[track['uri']])
+
+                while True:
+                    playback_state = self.sp.current_playback()
+
+                    # wait 30 seconds or remaining duration of song
+                    wait_time = min(remaining_diration, 30)
+                    await asyncio.sleep(wait_time)
+
+            else:
+                await asyncio.sleep(5)
 
     async def event_ready(self):
         logging.info("\n" * 100)
