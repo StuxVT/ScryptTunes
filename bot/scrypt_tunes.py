@@ -18,12 +18,11 @@ from twitchAPI.twitch import Twitch
 from twitchAPI.types import AuthScope
 from twitchio import Message, Chatter, Channel
 from twitchio.ext import commands
-from twitchio.ext.commands import Context, Command
+from twitchio.ext.commands import Context
 from twitchio.ext.commands.stringparser import StringParser
-from twitchio.websocket import WSConnection
 
 # Local
-from bot.blacklists import is_blacklisted, read_json, write_json
+from bot.blacklists import read_json, write_json
 from constants import CACHE, CONFIG
 from ui.models.config import Config
 
@@ -46,6 +45,8 @@ class Bot(commands.Bot):
 
         self.token = os.environ.get("SPOTIFY_AUTH")
         self.version = "0.2"
+
+        self.request_history = {}
 
         self.sp = spotipy.Spotify(
             auth_manager=SpotifyOAuth(
@@ -392,14 +393,26 @@ class Bot(commands.Bot):
             if song_uri != "not found":
                 if song_id in jscon["blacklist"]:
                     logging.warning(f"User @{ctx.author.name} requested blacklisted song: {song_id}")
-                    await ctx.send(f"@{ctx.author.name} That song is blacklisted.")
+                    return await ctx.send(f"@{ctx.author.name} That song is blacklisted.")
 
-                elif duration > 17:
-                    await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
+                if duration > 17:
+                    return await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
+
+                if ctx.author in self.request_history:
+                    if (datetime.datetime.now() - self.request_history[ctx.author]["last_request_time"]).seconds < 300:
+                        return await ctx.send(f"@{ctx.author.name} You need to wait 10 minutes between requests!")
+
+                    self.request_history[ctx.author]["last_request_time"] = datetime.datetime.now()
+                    self.request_history[ctx.author]["last_requested_song_id"] = song_id
                 else:
-                    self.sp.add_to_queue(song_uri)
-                    logging.info(
-                        f"Song successfully added to queue: ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ]")
-                    await ctx.send(
-                        f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
-                    )
+                    self.request_history[ctx.author] = {
+                        "last_request_time": datetime.datetime.now(),
+                        "last_requested_song_id": song_id
+                    }
+
+                self.sp.add_to_queue(song_uri)
+                logging.info(
+                    f"Song successfully added to queue: ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ]")
+                await ctx.send(
+                    f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
+                )
