@@ -269,7 +269,7 @@ class Bot(commands.Bot):
         logging.info("Recently Played: " + " | ".join(songs))
         await ctx.send("Recently Played: " + " | ".join(songs))
 
-    @commands.command(name="help", aliases=[])
+    @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
         await ctx.send("!sr <song name + artist or Spotify URL> - "
                  "Request a song to be added to the queue. "
