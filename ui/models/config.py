@@ -12,3 +12,4 @@ class Config(BaseModel):
     spotify_client_id: str = ""
     spotify_secret: str = ""
     spotify_redirect_uri: str = ""
+    rate_limit: int = 0

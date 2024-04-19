@@ -1,6 +1,6 @@
 from customtkinter import CTkFrame, CTkButton
 
-from ui.frames.list_setting_row import ListSettingRow
+from ui.frames.checkbox_setting_row import CheckboxSettingRow
 from ui.frames.text_setting_row import TextSettingRow
 
 
@@ -25,56 +25,62 @@ class SettingsFrame(CTkFrame):
                                          initial_value=settings_controller.get("prefix"))
         self.prefix_row.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
 
+        # Rate-limit checkbox
+        self.rate_limit_row = CheckboxSettingRow(self, setting_name="Rate Limit",
+                                                    setting_description="Limit song requests to once every 5 minutes",
+                                                    initial_value=settings_controller.get("rate_limit"))
+        self.rate_limit_row.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+
         # Watch-Channel
         self.channel_row = TextSettingRow(self, setting_name="Watch Channel",
                                           setting_description="Your twitch channel",
                                           initial_value=settings_controller.get("channel"))
-        self.channel_row.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+        self.channel_row.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
 
         # Token
         self.token_row = TextSettingRow(self, setting_name="Token",
                                         setting_description="Twitch OAuth Token",
                                         initial_value=settings_controller.get("token"),
                                         hidden=True)
-        self.token_row.grid(row=3, column=0, padx=10, pady=5, sticky="ew")
+        self.token_row.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
 
         # Client Id
         self.client_id_row = TextSettingRow(self, setting_name="client_id",
                                             setting_description="Twitch Client ID",
                                             initial_value=settings_controller.get("client_id"),
                                             hidden=True)
-        self.client_id_row.grid(row=4, column=0, padx=10, pady=5, sticky="ew")
+        self.client_id_row.grid(row=5, column=0, padx=10, pady=5, sticky="ew")
 
         # client_secret
         self.client_secret = TextSettingRow(self, setting_name="client_secret",
                                             setting_description="Twitch Client Secret",
                                             initial_value=settings_controller.get("client_secret"),
                                             hidden=True)
-        self.client_secret.grid(row=5, column=0, padx=10, pady=5, sticky="ew")
+        self.client_secret.grid(row=6, column=0, padx=10, pady=5, sticky="ew")
 
         # channel_points_reward
         self.channel_points_reward = TextSettingRow(self, setting_name="channel_points_reward",
                                                     setting_description="(Optional) Name of your song request redeem",
                                                     initial_value=settings_controller.get("channel_points_reward"))
-        self.channel_points_reward.grid(row=6, column=0, padx=10, pady=5, sticky="ew")
+        self.channel_points_reward.grid(row=7, column=0, padx=10, pady=5, sticky="ew")
 
         # spotify_client_id
         self.spotify_client_id = TextSettingRow(self, setting_name="spotify_client_id",
                                                 setting_description="Spotify Client ID",
                                                 initial_value=settings_controller.get("spotify_client_id"),
                                                 hidden=True)
-        self.spotify_client_id.grid(row=7, column=0, padx=10, pady=5, sticky="ew")
+        self.spotify_client_id.grid(row=8, column=0, padx=10, pady=5, sticky="ew")
 
         # spotify_secret
         self.spotify_secret = TextSettingRow(self, setting_name="spotify_secret",
                                              setting_description="Spotify Client Secret",
                                              initial_value=settings_controller.get("spotify_secret"),
                                              hidden=True)
-        self.spotify_secret.grid(row=8, column=0, padx=10, pady=5, sticky="ew")
+        self.spotify_secret.grid(row=9, column=0, padx=10, pady=5, sticky="ew")
 
         # Save Settings
         self.save_button = CTkButton(self, text="Save", command=self.save_settings)
-        self.save_button.grid(row=10, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
+        self.save_button.grid(row=11, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
 
     def save_settings(self):
         self.settings_controller.set('nickname', self.nickname_row.get())
@@ -86,5 +92,6 @@ class SettingsFrame(CTkFrame):
         self.settings_controller.set('channel_points_reward', self.channel_points_reward.get())
         self.settings_controller.set('spotify_client_id', self.spotify_client_id.get())
         self.settings_controller.set('spotify_secret', self.spotify_secret.get())
+        self.settings_controller.set('rate_limit', self.rate_limit_row.get())
 
         self.settings_controller.save_config()

@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import re
+from enum import Enum
 from urllib import request as url_request
 
 # Third-Party
@@ -18,14 +19,21 @@ from twitchAPI.twitch import Twitch
 from twitchAPI.types import AuthScope
 from twitchio import Message, Chatter, Channel
 from twitchio.ext import commands
-from twitchio.ext.commands import Context, Command
+from twitchio.ext.commands import Context
 from twitchio.ext.commands.stringparser import StringParser
-from twitchio.websocket import WSConnection
 
 # Local
-from bot.blacklists import is_blacklisted, read_json, write_json
+from bot.blacklists import read_json, write_json
 from constants import CACHE, CONFIG
 from ui.models.config import Config
+
+
+class Permission(Enum):
+    UNSUBBED = 1
+    SUBBED = 2
+    VIP = 3
+    MOD = 4
+    STREAMER = 5
 
 
 class Bot(commands.Bot):
@@ -46,6 +54,9 @@ class Bot(commands.Bot):
 
         self.token = os.environ.get("SPOTIFY_AUTH")
         self.version = "0.2"
+
+        self.request_history = {}
+        self.last_song = None
 
         self.sp = spotipy.Spotify(
             auth_manager=SpotifyOAuth(
@@ -251,11 +262,11 @@ class Bot(commands.Bot):
     @commands.command(
         name="lastsong", aliases=["previoussongs", "last", "previousplayed"]
     )
-    async def queue_command(self, ctx):
-        queue = self.sp.current_user_recently_played(limit=10)
+    async def recent_played_command(self, ctx):
+        recents = self.sp.current_user_recently_played(limit=10)
         songs = []
 
-        for song in queue["items"]:
+        for song in recents["items"]:
             # if the song artists include more than one artist: add all artist names to an artist list variable
             if len(song["track"]["artists"]) > 1:
                 artists = [artist["name"] for artist in song["track"]["artists"]]
@@ -268,6 +279,46 @@ class Bot(commands.Bot):
 
         logging.info("Recently Played: " + " | ".join(songs))
         await ctx.send("Recently Played: " + " | ".join(songs))
+
+    @commands.command(
+        name="queue", aliases=[]
+    )
+    async def queue_command(self, ctx):
+        """
+        TODO: Handle case where user cares about "when is my song gonna play?"
+            - need to keep track of entire user's playback history
+            - can probably implement this when playlistqueue is implemented and
+                piggyback off its playback state watcher to update the user's request history
+
+        TODO: breaks if queue size greater than 20
+
+        :param ctx:
+        :return:
+        """
+        if self.last_song:
+            queue = self.sp.queue()
+            current_playback = self.sp.current_playback()
+
+            total_songs = 1
+            playlist_time_remaining = current_playback['item']['duration_ms'] - current_playback['progress_ms']
+
+            for song in queue['queue'][::-1]:
+                last_song_found = False
+                if song['id'] == self.last_song:
+                    last_song_found = True
+                if last_song_found:
+                    total_songs += 1
+                    playlist_time_remaining += song['duration_ms']
+
+            total_seconds = playlist_time_remaining // 1000
+            hours = total_seconds // 3600
+            minutes = (total_seconds % 3600) // 60
+            seconds = total_seconds % 60
+
+            await ctx.send(f'Songs In Queue: {total_songs}'
+                           f'| Next added song would play in: {hours} hours {minutes:02}:{seconds:02} minutes')
+        else:
+            await ctx.send(f'Queue is empty!')
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
@@ -392,14 +443,52 @@ class Bot(commands.Bot):
             if song_uri != "not found":
                 if song_id in jscon["blacklist"]:
                     logging.warning(f"User @{ctx.author.name} requested blacklisted song: {song_id}")
-                    await ctx.send(f"@{ctx.author.name} That song is blacklisted.")
+                    return await ctx.send(f"@{ctx.author.name} That song is blacklisted.")
 
-                elif duration > 17:
-                    await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
-                else:
-                    self.sp.add_to_queue(song_uri)
-                    logging.info(
-                        f"Song successfully added to queue: ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ]")
-                    await ctx.send(
-                        f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
-                    )
+                if duration > 17:
+                    return await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
+
+                if self.config.rate_limit:
+                    if ctx.author in self.request_history:
+                        if (datetime.datetime.now() - self.request_history[ctx.author][
+                            "last_request_time"]).seconds < 300:
+                            return await ctx.send(f"@{ctx.author.name} You need to wait 10 minutes between requests!")
+
+                        self.request_history[ctx.author]["last_request_time"] = datetime.datetime.now()
+                        self.request_history[ctx.author]["last_requested_song_id"] = song_id
+                        self.last_song = song_id
+                    else:
+                        self.request_history[ctx.author] = {
+                            "last_request_time": datetime.datetime.now(),
+                            "last_requested_song_id": song_id
+                        }
+                        self.last_song = song_id
+
+                self.sp.add_to_queue(song_uri)
+                logging.info(
+                    f"Song successfully added to queue: ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ]")
+                await ctx.send(
+                    f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
+                )
+
+    # def _require_permissions(self, ctx, permission_set):
+    #     """
+    #     RBAC for commands
+    #
+    #     Roles:
+    #         - Twitch Users
+    #             - Unsubbed
+    #             - Subbed (could do tiers)
+    #             - VIP
+    #
+    #         - Admins
+    #             - twitch mods
+    #             - streamer
+    #
+    #     :param ctx: context param from twitchio
+    #     :param permission_set: list of permission strings
+    #     :return:
+    #     """
+    #     pass
+
+
