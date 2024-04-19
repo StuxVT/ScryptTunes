@@ -8,7 +8,8 @@ import constants
 from ui.models.song_blacklist import SongBlacklist
 from ui.models.user_blacklist import UserBlacklist
 from ui.models.config import Config
-from ui.views.settings_view import SettingsView
+from ui.views.general_settings_view import GeneralSettingsView
+from ui.views.permission_settings_view import PermissionSettingsView
 
 
 class SettingsController:
@@ -60,6 +61,10 @@ class SettingsController:
         with open(constants.SONG_BLACKLIST, "w") as f:
             json.dump(self.song_blacklist.model_dump(), f, indent=4)
 
-    def show_settings_window(self):
+    def show_general_settings_window(self):
         x_offset, y_offset = map(int, self.root.geometry().split('+')[1:3])
-        SettingsView(self, geometry=f"{800}x{600}+{x_offset}+{y_offset}").grab_set()  # grab focus until closed
+        GeneralSettingsView(self, geometry=f"{800}x{600}+{x_offset}+{y_offset}").grab_set()  # grab focus until closed
+
+    def show_permissions_settings_window(self):
+        x_offset, y_offset = map(int, self.root.geometry().split('+')[1:3])
+        PermissionSettingsView(self, geometry=f"{800}x{600}+{x_offset}+{y_offset}").grab_set()  # grab focus until closed

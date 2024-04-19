@@ -24,16 +24,24 @@ from twitchio.ext.commands.stringparser import StringParser
 
 # Local
 from bot.blacklists import read_json, write_json
-from constants import CACHE, CONFIG
+from constants import CACHE, CONFIG, Permission
 from ui.models.config import Config
 
 
-class Permission(Enum):
-    UNSUBBED = 1
-    SUBBED = 2
-    VIP = 3
-    MOD = 4
-    STREAMER = 5
+def _require_permissions(ctx, permission_set):
+    """
+    RBAC for commands
+
+    :param ctx: context param from twitchio
+    :param permission_set: list of permission strings
+    :return: boolean (allow or disallow run)
+    """
+
+    for permission in permission_set:
+        if permission.value in ctx.author.badges:
+            return True
+
+    return False
 
 
 class Bot(commands.Bot):
@@ -470,25 +478,3 @@ class Bot(commands.Bot):
                 await ctx.send(
                     f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                 )
-
-    # def _require_permissions(self, ctx, permission_set):
-    #     """
-    #     RBAC for commands
-    #
-    #     Roles:
-    #         - Twitch Users
-    #             - Unsubbed
-    #             - Subbed (could do tiers)
-    #             - VIP
-    #
-    #         - Admins
-    #             - twitch mods
-    #             - streamer
-    #
-    #     :param ctx: context param from twitchio
-    #     :param permission_set: list of permission strings
-    #     :return:
-    #     """
-    #     pass
-
-
