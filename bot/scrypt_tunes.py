@@ -252,11 +252,11 @@ class Bot(commands.Bot):
     @commands.command(
         name="lastsong", aliases=["previoussongs", "last", "previousplayed"]
     )
-    async def queue_command(self, ctx):
-        queue = self.sp.current_user_recently_played(limit=10)
+    async def recent_played_command(self, ctx):
+        recents = self.sp.current_user_recently_played(limit=10)
         songs = []
 
-        for song in queue["items"]:
+        for song in recents["items"]:
             # if the song artists include more than one artist: add all artist names to an artist list variable
             if len(song["track"]["artists"]) > 1:
                 artists = [artist["name"] for artist in song["track"]["artists"]]
@@ -269,6 +269,12 @@ class Bot(commands.Bot):
 
         logging.info("Recently Played: " + " | ".join(songs))
         await ctx.send("Recently Played: " + " | ".join(songs))
+
+    @commands.command(
+        name="queue", aliases=[]
+    )
+    async def queue_command(self):
+
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
