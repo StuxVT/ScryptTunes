@@ -273,8 +273,33 @@ class Bot(commands.Bot):
     @commands.command(
         name="queue", aliases=[]
     )
-    async def queue_command(self):
+    async def queue_command(self, ctx):
+        """
+        TODO: Handle case where user cares about "when is my song gonna play?"
+            - need to keep track of entire user's playback history
+            - can probably implement this when playlistqueue is implemented and
+                piggyback off its playback state watcher to update the user's request history
+        :param ctx:
+        :return:
+        """
+        queue = self.sp.queue()
 
+        total_songs = len(queue['queue']) + 1
+
+        playlist_time_remaining = 0
+        current_playback = self.sp.current_playback()
+        playlist_time_remaining += current_playback['item']['duration_ms'] - current_playback['progress_ms']
+
+        for song in queue['queue']:
+            playlist_time_remaining += song['duration_ms']
+
+        total_seconds = playlist_time_remaining // 1000
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+
+        await ctx.send(f'Current Queue: {total_songs} Songs | {hours} Hours {minutes:02}:{seconds:02} Minutes remaining'
+)
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
@@ -406,7 +431,8 @@ class Bot(commands.Bot):
 
                 if self.config.rate_limit:
                     if ctx.author in self.request_history:
-                        if (datetime.datetime.now() - self.request_history[ctx.author]["last_request_time"]).seconds < 300:
+                        if (datetime.datetime.now() - self.request_history[ctx.author][
+                            "last_request_time"]).seconds < 300:
                             return await ctx.send(f"@{ctx.author.name} You need to wait 10 minutes between requests!")
 
                         self.request_history[ctx.author]["last_request_time"] = datetime.datetime.now()
