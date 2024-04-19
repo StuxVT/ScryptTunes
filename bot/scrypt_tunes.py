@@ -47,6 +47,7 @@ class Bot(commands.Bot):
         self.version = "0.2"
 
         self.request_history = {}
+        self.last_song = None
 
         self.sp = spotipy.Spotify(
             auth_manager=SpotifyOAuth(
@@ -279,27 +280,36 @@ class Bot(commands.Bot):
             - need to keep track of entire user's playback history
             - can probably implement this when playlistqueue is implemented and
                 piggyback off its playback state watcher to update the user's request history
+
+        TODO: breaks if queue size greater than 20
+
         :param ctx:
         :return:
         """
-        queue = self.sp.queue()
+        if self.last_song:
+            queue = self.sp.queue()
+            current_playback = self.sp.current_playback()
 
-        total_songs = len(queue['queue']) + 1
+            total_songs = 1
+            playlist_time_remaining = current_playback['item']['duration_ms'] - current_playback['progress_ms']
 
-        playlist_time_remaining = 0
-        current_playback = self.sp.current_playback()
-        playlist_time_remaining += current_playback['item']['duration_ms'] - current_playback['progress_ms']
+            for song in queue['queue'][::-1]:
+                last_song_found = False
+                if song['id'] == self.last_song:
+                    last_song_found = True
+                if last_song_found:
+                    total_songs += 1
+                    playlist_time_remaining += song['duration_ms']
 
-        for song in queue['queue']:
-            playlist_time_remaining += song['duration_ms']
+            total_seconds = playlist_time_remaining // 1000
+            hours = total_seconds // 3600
+            minutes = (total_seconds % 3600) // 60
+            seconds = total_seconds % 60
 
-        total_seconds = playlist_time_remaining // 1000
-        hours = total_seconds // 3600
-        minutes = (total_seconds % 3600) // 60
-        seconds = total_seconds % 60
-
-        await ctx.send(f'Current Queue: {total_songs} Songs | {hours} Hours {minutes:02}:{seconds:02} Minutes remaining'
-)
+            await ctx.send(f'Songs In Queue: {total_songs}'
+                           f'| Next added song would play in: {hours} hours {minutes:02}:{seconds:02} minutes')
+        else:
+            await ctx.send(f'Queue is empty!')
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
@@ -437,11 +447,13 @@ class Bot(commands.Bot):
 
                         self.request_history[ctx.author]["last_request_time"] = datetime.datetime.now()
                         self.request_history[ctx.author]["last_requested_song_id"] = song_id
+                        self.last_song = song_id
                     else:
                         self.request_history[ctx.author] = {
                             "last_request_time": datetime.datetime.now(),
                             "last_requested_song_id": song_id
                         }
+                        self.last_song = song_id
 
                 self.sp.add_to_queue(song_uri)
                 logging.info(
