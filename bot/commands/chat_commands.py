@@ -4,7 +4,7 @@ from typing import Tuple
 
 # Third Party
 
-from bot.utils.config import get_bot_config
+from bot.utils import get_bot_config
 from bot.utils.blacklists import blacklist_a_user, unblacklist_a_user, blacklist_a_song
 from bot.utils.spotify_utils import get_track_name_from_uri, get_currently_playing_message, \
     get_recently_playing_message, get_queue_message

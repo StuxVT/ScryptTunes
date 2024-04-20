@@ -19,8 +19,9 @@ from bot.commands.chat_commands import ChatCommands
 from bot.commands.spotify_commands import SpotifyCommands
 # Local
 from bot.utils.blacklists import read_json
-from bot.utils import get_bot_version
-from bot.utils.config import get_bot_config
+from bot.utils import get_bot_version, get_bot_config
+
+
 class Permission(Enum):
     UNSUBBED = 1
     SUBBED = 2
