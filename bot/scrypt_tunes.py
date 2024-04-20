@@ -23,7 +23,7 @@ class Bot(commands.Bot):
             nick=config["nickname"],
             prefix=config["prefix"],
             initial_channels=[config["channel"]],
-            case_insensitive=True  # Added case_insensitive parameter here
+            case_insensitive=True
         )
 
         self.token = os.environ.get("SPOTIFY_AUTH")
