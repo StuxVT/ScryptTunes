@@ -45,11 +45,12 @@ class Bot(commands.Bot):
         except ValidationError:
             self.config = Config()
         super().__init__(
-            token=self.config.token,
-            client_id=self.config.client_id,
-            nick=self.config.nickname,
-            prefix=self.config.prefix,
-            initial_channels=[self.config.channel],
+            token=config.get("token"),
+            client_id=config.get("client_id"),
+            nick=config["nickname"],
+            prefix=config["prefix"],
+            initial_channels=[config["channel"]],
+            case_insensitive=True
         )
 
         self.token = os.environ.get("SPOTIFY_AUTH")
