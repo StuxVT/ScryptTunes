@@ -50,6 +50,7 @@ class Bot(commands.Bot):
             nick=self.config.nickname,
             prefix=self.config.prefix,
             initial_channels=[self.config.channel],
+            case_insensitive=True
         )
 
         self.token = os.environ.get("SPOTIFY_AUTH")
