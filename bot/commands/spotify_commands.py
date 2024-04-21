@@ -10,11 +10,11 @@ from urllib import request as url_request
 import requests as req
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-
+from twitchio.ext.commands import Context
 
 # Local
 from constants import CACHE
-from bot.utils.blacklists import read_json, is_user_blacklisted, is_song_blacklisted
+from bot.utils.blacklists import is_user_blacklisted, is_song_blacklisted
 from bot.utils.spotify_utils import get_song_details
 
 
@@ -76,7 +76,7 @@ class SpotifyCommands:
         self.request_history = {}
         self.last_song = None
 
-    async def chat_song_request(self, ctx, song, song_uri, album: bool, requests= None):
+    async def chat_song_request(self, ctx: Context, song: str, song_uri: str, album: bool, requests= None):
         # todo: why is there a requests argument here?
         if is_user_blacklisted(ctx.author.name):
             logging.warning(f"Blacklisted user @{ctx.author.name} attempted request: Song:{song} - URI:{song_uri}")
@@ -90,7 +90,7 @@ class SpotifyCommands:
         song_id = song_uri.replace("spotify:track:", "")
         await self.process_song_request(ctx, song_uri, song_id, album)
 
-    async def handle_song_uri(self, ctx, song, song_uri) -> str:
+    async def handle_song_uri(self, ctx: Context, song: str, song_uri: str) -> str:
         """
         Handles song URI, parses it and gets a spotify song URI.
         """
@@ -101,7 +101,7 @@ class SpotifyCommands:
         if re.match(self.URL_REGEX, song_uri):
             return await self.handle_external_links(ctx, song_uri)
 
-    async def handle_external_links(self, ctx, song_uri):
+    async def handle_external_links(self, ctx: Context, song_uri: str) -> str:
         """
         Standardizes external links
         """
@@ -110,7 +110,7 @@ class SpotifyCommands:
         if "youtube" in song_uri:
             return await self.handle_youtube_link(ctx, song_uri)
 
-    async def handle_spotify_link(self, ctx, song_uri):
+    async def handle_spotify_link(self, ctx: Context, song_uri: str) -> str:
         """
         Handles spotify links
         """
@@ -133,7 +133,7 @@ class SpotifyCommands:
 
         return data["uri"].replace("spotify:track:", "")
 
-    async def handle_youtube_link(self, ctx, song_uri):
+    async def handle_youtube_link(self, ctx: Context, song_uri: str) -> str:
         logging.info(f"Youtube Link Detected <{song_uri}> - Searching song name on Spotify as fallback")
         await ctx.send("Youtube Link Detected - Searching song name on Spotify as fallback")
         with url_request.urlopen('https://noembed.com/embed?url=' + song_uri) as url:
@@ -142,7 +142,7 @@ class SpotifyCommands:
         song_details = get_song_details(self.spotipy_instance, f'{title} {author}')
         return song_details["tracks"]["items"][0]["uri"]
 
-    async def process_song_request(self, ctx, song_uri, song_id, album):
+    async def process_song_request(self, ctx: Context, song_uri: str, song_id: str, album: bool) -> None:
         if not album:
             data = self.spotipy_instance.track(song_id)
             song_name = data["name"]
@@ -158,7 +158,7 @@ class SpotifyCommands:
             return await ctx.send(f"@{ctx.author.name} That song is blacklisted.")
 
         if duration > 17:
-            # todo: I am not 100% sure why this is hardcoded like this
+            # todo: I am not 100% sure why the duration is hardcoded like this
             logging.warning(f"User @{ctx.author.name} requested song duration: {duration} seconds, which is more than allowed.")
             return await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
 
@@ -172,7 +172,7 @@ class SpotifyCommands:
             f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
         )
 
-    async def handle_rate_limiter(self, ctx, song_id) -> bool:
+    async def handle_rate_limiter(self, ctx: Context, song_id: str) -> bool:
         if ctx.author in self.request_history:
             if (datetime.datetime.now() - self.request_history[ctx.author][
                 "last_request_time"]).seconds < 300:

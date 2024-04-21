@@ -1,13 +1,13 @@
-import logging
 from typing import Tuple, List
-import re
+
+from spotipy import Spotify
 
 
-def get_song_details(spotify, song):
+def get_song_details(spotify: Spotify, song: str):
     return spotify.search(song, limit=1, type="track", market="US")
 
 
-def get_album_details(spotify, song_id) -> Tuple[str, List[str], float]:
+def get_album_details(spotify: Spotify, song_id: str) -> Tuple[str, List[str], float]:
     """
     Get album name, artist and album duration
     :param spotify: Spotipy Instance
@@ -23,11 +23,13 @@ def get_album_details(spotify, song_id) -> Tuple[str, List[str], float]:
     return song_name, song_artists_names, duration
 
 
-def get_track_name_from_uri(spotify, uri):
+def get_track_name_from_uri(spotify: Spotify, uri: str) -> str:
     return spotify.track(uri)["name"]
 
 
-def get_currently_playing_message(data):
+def get_currently_playing_message(data) -> str:
+    # todo: Figure out param: data data type (its a spotify API response but it seems complex enough so maybe we
+    #  should just leave it like this)
     song_artists_names = [artist["name"] for artist in data["item"]["artists"]]
 
     min_through = int(data["progress_ms"] / (1000 * 60) % 60)
@@ -41,7 +43,9 @@ def get_currently_playing_message(data):
     return  f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
 
 
-def get_recently_playing_message(data):
+def get_recently_playing_message(data) -> str:
+#     todo: Figure out param: data data type (its a spotify API response but it seems complex enough so maybe we
+#      should just leave it like this)
     songs = []
     for song in data["items"]:
         artists = ", ".join([artist["name"] for artist in song["track"]["artists"]])
@@ -49,7 +53,7 @@ def get_recently_playing_message(data):
     return f"Recently Played: {' | '.join(songs)}"
 
 
-def get_queue_message(queue, current_playback, last_song):
+def get_queue_message(queue, current_playback, last_song: str) -> str:
     # todo: this code looks suprisingly stupid, definitely needs refactoring
     total_songs = 1
     playlist_time_remaining = current_playback['item']['duration_ms'] - current_playback['progress_ms']

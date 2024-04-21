@@ -1,9 +1,10 @@
-# todo: add separate functionality for each blacklist types
 # global
 import json
 
 # local
 from constants import USER_BLACKLIST, SONG_BLACKLIST
+
+# todo: add separate functionality for each blacklist types
 
 
 def read_json(filename):
@@ -52,7 +53,7 @@ def is_song_blacklisted(song_id: str) -> bool:
     return song_id in read_json("blacklist")["blacklist"]
 
 
-def blacklist_a_user(username: str) -> bool:
+def blacklist_user(username: str) -> bool:
     """
     Adds a username to blacklist
     Args:
@@ -70,7 +71,7 @@ def blacklist_a_user(username: str) -> bool:
     return True
 
 
-def unblacklist_a_user(username: str) -> bool:
+def unblacklist_user(username: str) -> bool:
     """
     Removes a username to blacklist
     Args:
@@ -88,7 +89,7 @@ def unblacklist_a_user(username: str) -> bool:
     return True
 
 
-def blacklist_a_song(song_uri: str) -> bool:
+def blacklist_song(song_uri: str) -> bool:
     """
         Adds a song to blacklist
         Args:
@@ -104,7 +105,7 @@ def blacklist_a_song(song_uri: str) -> bool:
     return True
 
 
-def unblacklist_a_song(song_uri: str) -> bool:
+def unblacklist_song(song_uri: str) -> bool:
     """
     Removes a song from the blacklist
     Args:

@@ -183,7 +183,7 @@ class Bot(commands.Bot):
         :param ctx:
         :return:
         """
-        await ChatCommands.queue(ctx, self.spotipy_instance, self.spotify_commands.last_song)
+        await ChatCommands.queue(ctx, self.spotify_commands.last_song, self.spotipy_instance)
 
 
 
