@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 class PermissionConfig(BaseModel):
+    unsubbed: bool = False
     subbed: bool = False
     sub_gifter: bool = False
     vip: bool = False
@@ -12,7 +13,7 @@ class PermissionConfig(BaseModel):
 
 
 class PermissionSetting(BaseModel):
-    permission_name: str
+    command_name: str
     permission_config: PermissionConfig
 
 
