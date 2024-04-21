@@ -1,3 +1,5 @@
+Instructions broken oopsies, will fix soon, contact me if you need help setting up
+
 # ScryptTunes
 
 Welcome to ScryptTunes! This application allows you to control your Spotify playlist through Twitch chat commands. This guide will walk you through the installation and setup process, step-by-step.
