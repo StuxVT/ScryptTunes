@@ -326,20 +326,36 @@ class Bot(commands.Bot):
                        "Request a song to be added to the queue. "
                        "Example: !sr Never Gonna Give You Up - Rick Astley")
 
+
+    async def is_valid_url(self, url: str, ctx: Context) -> bool:
+        spotify_track_regex = "^(https:\/\/open.spotify.com\/user\/spotify\/playlist\/|spotify:user:spotify:playlist:)([a-zA-Z0-9]+)(.*)$"
+        if "spotify" in url and not re.match(spotify_track_regex, url):
+            # For now only artists but we can add more later
+            if "artist" in url:
+                logging.info(f"Artist URLs are not supported: {url}")
+                await ctx.send(f"@{ctx.author.name},Artist URLs are not supported.")
+                return False
+            logging.info(f"Spotify url is invalid or unsupported: {url}")
+            await ctx.send(f"@{ctx.author.name} the provided Spotify url is invalid or unsupported.")
+            return False
+
+        youtube_video_regex = "^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|live\/|v\/)?)([\w\-]+)(\S+)?$"
+        if "youtu" in url and not re.match(self.youtube_video_regex, url):
+            logging.info(f"Toutube url is invalid or unsupported: {url}")
+            await ctx.send(f"@{ctx.author.name},The provided youtube url is invalid or unsupported.")
+            return False
+
+        return True
+
     @commands.command(name="songrequest", aliases=["sr", "addsong"])
     async def songrequest_command(self, ctx, *, song: str = None):
-
         if not song:
             return await self.help_command(ctx)
-
         try:
             song_uri = None
-
-            if (
-                    song.startswith("spotify:track:")
-                    or not song.startswith("spotify:track:")
-                    and re.match(self.URL_REGEX, song)
-            ):
+            if re.match(self.URL_REGEX, song):
+                if not self.is_valid_url(song, ctx):
+                    return
                 song_uri = song
                 await self.chat_song_request(ctx, song_uri, song_uri, album=False)
 
