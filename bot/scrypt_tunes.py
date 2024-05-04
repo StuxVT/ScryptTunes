@@ -141,6 +141,7 @@ class Bot(commands.Bot):
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
         await ChatCommands._help(ctx)
+
     @commands.command(name="blacklistuser")
     async def blacklist_user(self, ctx, *, user: str):
         await ChatCommands.blacklist_user(ctx, user)
@@ -157,7 +158,7 @@ class Bot(commands.Bot):
         name="unblacklist", aliases=["unblacklistsong", "blacklistremove"]
     )
     async def unblacklist_command(self, ctx, *, song_uri: str):
-        await ChatCommands.unblacklist_song(ctx, song_uri)
+        await ChatCommands.unblacklist_song(ctx, song_uri, self.spotipy_instance)
 
     @commands.command(name="np", aliases=["nowplaying", "song"])
     async def np_command(self, ctx):
