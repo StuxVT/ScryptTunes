@@ -48,7 +48,7 @@ class ChatCommands:
         """
 
         if not song:
-            await ChatCommands._help(ctx)
+            await ChatCommands.help(ctx)
             return None, None
         try:
             song_uri = None
@@ -63,7 +63,7 @@ class ChatCommands:
             return None, None
 
     @staticmethod
-    async def _help(ctx: Context) -> None:
+    async def help(ctx: Context) -> None:
         prefix = get_bot_config().prefix
 
         await ctx.send(f"{prefix}sr <song name + artist or Spotify URL> - "

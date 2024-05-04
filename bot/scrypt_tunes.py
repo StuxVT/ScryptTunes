@@ -15,9 +15,9 @@ from twitchio.ext import commands
 from twitchio.ext.commands import Context
 from twitchio.ext.commands.stringparser import StringParser
 
+# Local
 from bot.commands.chat_commands import ChatCommands
 from bot.commands.spotify_commands import SpotifyCommands
-# Local
 from bot.utils.blacklists import read_json
 from bot.utils import get_bot_version, get_bot_config
 
@@ -140,7 +140,7 @@ class Bot(commands.Bot):
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
-        await ChatCommands._help(ctx)
+        await ChatCommands.help(ctx)
 
     @commands.command(name="blacklistuser")
     async def blacklist_user(self, ctx, *, user: str):
@@ -152,7 +152,7 @@ class Bot(commands.Bot):
 
     @commands.command(name="blacklist", aliases=["blacklistsong", "blacklistadd"])
     async def blacklist_command(self, ctx, *, song_uri: str):
-        await ChatCommands.blacklist_song(ctx, song_uri)
+        await ChatCommands.blacklist_song(ctx, song_uri, self.spotipy_instance)
 
     @commands.command(
         name="unblacklist", aliases=["unblacklistsong", "blacklistremove"]
@@ -163,6 +163,7 @@ class Bot(commands.Bot):
     @commands.command(name="np", aliases=["nowplaying", "song"])
     async def np_command(self, ctx):
         await ChatCommands.now_playing(ctx, self.spotipy_instance)
+
     @commands.command(
         name="lastsong", aliases=["previoussongs", "last", "previousplayed"]
     )
@@ -185,6 +186,3 @@ class Bot(commands.Bot):
         :return:
         """
         await ChatCommands.queue(ctx, self.spotify_commands.last_song, self.spotipy_instance)
-
-
-
