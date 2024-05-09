@@ -12,7 +12,9 @@ class ListInput(CTkFrame):
 
         self.item_entry = CTkEntry(self)
         self.add_button = CTkButton(self, text="Add Item", command=self.add_item)
-        self.remove_button = CTkButton(self, text="Remove Selected Item", command=self.remove_selected_item)
+        self.remove_button = CTkButton(
+            self, text="Remove Selected Item", command=self.remove_selected_item
+        )
 
         self.listbox = CustomListbox(self, selectmode=tk.SINGLE)
         for item in self.item_list:

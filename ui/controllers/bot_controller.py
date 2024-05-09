@@ -21,8 +21,10 @@ class BotController:
             self.async_thread.start()
 
     def stop(self):
-        logging.info(f"---------------------------------------------------\n"
-                     f"Asking bot nicely to commit die")
+        logging.info(
+            f"---------------------------------------------------\n"
+            f"Asking bot nicely to commit die"
+        )
         self.loop.call_soon_threadsafe(self.loop.stop)
         self.bot_run_event.clear()
 

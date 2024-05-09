@@ -10,15 +10,12 @@ theme data for ctkentry
     "placeholder_text_color": ["gray52", "gray62"]
   }
 """
+
 from tkinter import Listbox, SINGLE
 
 
 class CustomListbox(Listbox):
     def __init__(self, master, selectmode=SINGLE):
         super().__init__(
-            master,
-            borderwidth=2,
-            fg="#F9F9FA",
-            bg="#343638",
-            selectmode=selectmode
+            master, borderwidth=2, fg="#F9F9FA", bg="#343638", selectmode=selectmode
         )
