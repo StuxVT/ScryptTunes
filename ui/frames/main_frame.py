@@ -23,9 +23,7 @@ class MainFrame(CTkFrame):
         self.log_text = CTkTextbox(master=self.tabview.tab("Log"), wrap=WORD)
         self.log_text.pack(side="top", fill="both", expand=True)
 
-        logging.getLogger().addHandler(
-            CTkTabviewHandler(self.log_text)
-        )
+        logging.getLogger().addHandler(CTkTabviewHandler(self.log_text))
 
 
 class CTkTabviewHandler(RichHandler):
@@ -36,6 +34,6 @@ class CTkTabviewHandler(RichHandler):
     def emit(self, record: logging.LogRecord):
         log_message = self.format(record)
         # Send the log message to the Text widget
-        self.text_widget.insert(END, log_message + '\n')
+        self.text_widget.insert(END, log_message + "\n")
         # Automatically scroll to the end to show the latest log message
         self.text_widget.see(END)
