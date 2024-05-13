@@ -7,6 +7,7 @@ import os
 import re
 from enum import Enum
 from urllib import request as url_request
+from urllib.parse import quote
 
 # Third-Party
 import requests as req
@@ -42,6 +43,27 @@ def _require_permissions(ctx, permission_set):
             return True
 
     return False
+
+
+async def is_valid_media_url(url: str, ctx: Context) -> bool:
+    spotify_track_regex = r"^(https:\/\/open.spotify.com\/track\/|spotify:track:)([a-zA-Z0-9]+)(\?.*)?$"
+    if "spotify" in url and not re.match(spotify_track_regex, url):
+        for filter_term in ["artist", "album"]:
+            if filter_term in url:
+                logging.info(f"{filter_term} URLs are not supported")
+                await ctx.send(f"@{ctx.author.name}, {filter_term} URLs are not supported.")
+                return False
+        logging.info(f"Spotify track URL is invalid or unsupported")
+        await ctx.send(f"@{ctx.author.name}, the provided Spotify track URL is invalid or unsupported.")
+        return False
+
+    youtube_video_regex = r"^(https?:\/\/)?(www\.|m\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)(\?.*)?$"
+    if "youtu" in url and not re.match(youtube_video_regex, url):
+        logging.info(f"YouTube url is invalid or unsupported: {url}")
+        await ctx.send(f"@{ctx.author.name}, the provided YouTube url is invalid or unsupported.")
+        return False
+
+    return True
 
 
 class Bot(commands.Bot):
@@ -331,24 +353,19 @@ class Bot(commands.Bot):
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
-        await ctx.send("!sr <song name + artist or Spotify URL> - "
+        await ctx.send("!sr <song name and artist> | or !sr <Spotify URL> - "
                        "Request a song to be added to the queue. "
                        "Example: !sr Never Gonna Give You Up - Rick Astley")
 
     @commands.command(name="songrequest", aliases=["sr", "addsong"])
     async def songrequest_command(self, ctx, *, song: str = None):
-
         if not song:
             return await self.help_command(ctx)
-
         try:
             song_uri = None
-
-            if (
-                    song.startswith("spotify:track:")
-                    or not song.startswith("spotify:track:")
-                    and re.match(self.URL_REGEX, song)
-            ):
+            if re.match(self.URL_REGEX, song):
+                if not is_valid_media_url(song, ctx):
+                    return
                 song_uri = song
                 await self.chat_song_request(ctx, song_uri, song_uri, album=False)
 
@@ -432,12 +449,15 @@ class Bot(commands.Bot):
                     song_uri = data["uri"]
                     song_uri = song_uri.replace("spotify:track:", "")
                 if 'youtube' in song_uri or 'youtu.be' in song_uri:
-                    with url_request.urlopen('https://noembed.com/embed?url=' + song_uri) as url:
+                    song_uri = song_uri.strip()  # Removing any leading/trailing whitespace
+                    encoded_url = quote(song_uri,
+                                        safe=":/?&=")  # Safely encode URL special characters except for a few allowed
+                    with url_request.urlopen(f'https://noembed.com/embed?url={encoded_url}') as url:
                         data = json.load(url)
-                        title, author = data['title'], data['author_name']
-                    logging.info(f"Youtube Link Detected <{song_uri}> - Searching song name on Spotify as fallback")
-                    await ctx.send(f"Youtube Link Detected - Searching song name on Spotify as fallback")
-                    await self.chat_song_request(ctx, f'{title} {author}', song_uri=None, album=False)
+                        title = data['title'], data['author_name']
+                    logging.info(f"YouTube Link Detected <{encoded_url}> - Searching song name on Spotify as fallback")
+                    await ctx.send(f"YouTube Link Detected - Searching song name on Spotify as fallback")
+                    await self.chat_song_request(ctx, f'{title}', song_uri=None, album=False)
                     return
 
             song_id = song_uri.replace("spotify:track:", "")
@@ -458,9 +478,10 @@ class Bot(commands.Bot):
                     return await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
 
                 if self.config.rate_limit:
-                    if ctx.author in self.request_history:
-                        if (datetime.datetime.now() - self.request_history[ctx.author][
-                            "last_request_time"]).seconds < 300:
+                    if ctx.author in self.request_history and ctx.author != self.config.channel:
+                        if (
+                                datetime.datetime.now() - self.request_history[ctx.author]["last_request_time"]
+                        ).seconds < 300:
                             return await ctx.send(f"@{ctx.author.name} You need to wait 10 minutes between requests!")
 
                         self.request_history[ctx.author]["last_request_time"] = datetime.datetime.now()
@@ -479,3 +500,23 @@ class Bot(commands.Bot):
                 await ctx.send(
                     f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                 )
+
+    # def _require_permissions(self, ctx, permission_set):
+    #     """
+    #     RBAC for commands
+    #
+    #     Roles:
+    #         - Twitch Users
+    #             - Unsubbed
+    #             - Subbed (could do tiers)
+    #             - VIP
+    #
+    #         - Admins
+    #             - twitch mods
+    #             - streamer
+    #
+    #     :param ctx: context param from twitchio
+    #     :param permission_set: list of permission strings
+    #     :return:
+    #     """
+    #     pass

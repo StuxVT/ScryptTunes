@@ -1,8 +1,10 @@
 import os
 from enum import Enum
 
-SCRYPTTUNES_DATA = os.path.join(os.getenv('LOCALAPPDATA'), "Stux\\ScryptTunes\\")
-SCRYPTTUNES_DATA_CONFIG = os.path.join(os.getenv('LOCALAPPDATA'), "Stux\\ScryptTunes\\config")
+SCRYPTTUNES_DATA = os.path.join(os.getenv("LOCALAPPDATA"), "Stux\\ScryptTunes\\")
+SCRYPTTUNES_DATA_CONFIG = os.path.join(
+    os.getenv("LOCALAPPDATA"), "Stux\\ScryptTunes\\config"
+)
 
 
 SONG_BLACKLIST = os.path.join(SCRYPTTUNES_DATA_CONFIG, "blacklist.json")
