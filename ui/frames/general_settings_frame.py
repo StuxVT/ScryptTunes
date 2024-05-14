@@ -4,7 +4,7 @@ from ui.frames.checkbox_setting_row import CheckboxSettingRow
 from ui.frames.text_setting_row import TextSettingRow
 
 
-class SettingsFrame(CTkFrame):
+class GeneralSettingsFrame(CTkFrame):
     def __init__(self, master, settings_controller):
         super().__init__(master)
 

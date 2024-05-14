@@ -25,16 +25,8 @@ from twitchio.ext.commands.stringparser import StringParser
 
 # Local
 from bot.blacklists import read_json, write_json
-from constants import CACHE, CONFIG
+from constants import CACHE, CONFIG, Permission
 from ui.models.config import Config
-
-
-class Permission(Enum):
-    UNSUBBED = 1
-    SUBBED = 2
-    VIP = 3
-    MOD = 4
-    STREAMER = 5
 
 
 async def is_valid_media_url(url: str, ctx: Context) -> bool:
@@ -76,7 +68,7 @@ class Bot(commands.Bot):
         )
 
         self.token = os.environ.get("SPOTIFY_AUTH")
-        self.version = "0.2"
+        self.version = "0.3"
 
         self.request_history = {}
         self.last_song = None
@@ -103,6 +95,25 @@ class Bot(commands.Bot):
             r"(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|"
             r"[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
         )
+
+    def _check_permissions(self, ctx, command_name):
+        """
+        RBAC for commands
+
+        :param ctx: context param from twitchio
+        :param permission_set: list of permission strings
+        :return: boolean (allow or disallow run)
+        """
+
+        # todo: work for any command
+        command_perms = self.config.permissions.ping_command.permission_config.model_dump()
+
+        for permission in command_perms:
+            if command_perms[permission]:
+                if permission in ctx.author.badges:
+                    return True
+
+        return False
 
     async def event_ready(self):
         if self.config.channel_points_reward:
@@ -177,6 +188,8 @@ class Bot(commands.Bot):
 
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
+        if not self._check_permissions(ctx=ctx, command_name="ping_command"):
+            return
         await ctx.send(
             f":) 🎶 ScryptTunes v{self.version} is online!"
         )
