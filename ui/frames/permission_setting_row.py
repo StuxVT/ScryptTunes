@@ -32,7 +32,7 @@ class PermissionSettingRow(CTkFrame):
         self.unsubbed_checkbox.pack()
 
         # subbed Setting
-        self.subbed_value = IntVar(value=initial_values.subbed)
+        self.subbed_value = IntVar(value=initial_values.subscriber)
         self.subbed_checkbox = CTkCheckBox(
             widget_frame, variable=self.subbed_value, onvalue=1, offvalue=0, text="Subbed"
         )
@@ -64,7 +64,7 @@ class PermissionSettingRow(CTkFrame):
             command_name=self.command_name,
             permission_config=PermissionConfig(
                 unsubbed=bool(self.unsubbed_value.get()),
-                subbed=bool(self.subbed_value.get()),
+                subscriber=bool(self.subbed_value.get()),
                 vip=bool(self.vip_value.get()),
                 mod=bool(self.mod_value.get()),
                 broadcaster=bool(self.streamer_value.get())

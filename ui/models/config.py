@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class PermissionConfig(BaseModel):
     unsubbed: bool = False
-    subbed: bool = False
+    subscriber: bool = False
     vip: bool = False
     mod: bool = False
     broadcaster: bool = False
