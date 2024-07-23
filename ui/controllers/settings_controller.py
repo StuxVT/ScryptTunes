@@ -41,7 +41,23 @@ class SettingsController:
                         "ping_command": PermissionSetting(
                             command_name="ping_command",
                             permission_config=PermissionConfig()
-                        )
+                        ),
+                        "np_command": PermissionSetting(
+                            command_name="np_command",
+                            permission_config=PermissionConfig()
+                        ),
+                        "queue_command": PermissionSetting(
+                            command_name="queue_command",
+                            permission_config=PermissionConfig()
+                        ),
+                        "recent_played_command": PermissionSetting(
+                            command_name="recent_played_command",
+                            permission_config=PermissionConfig()
+                        ),
+                        "songrequest_command": PermissionSetting(
+                            command_name="songrequest_command",
+                            permission_config=PermissionConfig()
+                        ),
                     }
                 self.config_model = Config(**config_data)
         else:

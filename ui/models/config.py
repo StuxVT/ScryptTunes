@@ -18,6 +18,10 @@ class PermissionSetting(BaseModel):
 
 class PermissionSettingDict(BaseModel):
     ping_command: PermissionSetting
+    np_command: PermissionSetting
+    queue_command: PermissionSetting
+    recent_played_command: PermissionSetting
+    songrequest_command: PermissionSetting
 
 
 class Config(BaseModel):

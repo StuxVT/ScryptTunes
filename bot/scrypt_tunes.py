@@ -100,17 +100,20 @@ class Bot(commands.Bot):
         """
         RBAC for commands
 
+        todo: higher permissions are allowed when unchkecked if lower permissions are checked
+
         :param ctx: context param from twitchio
         :param permission_set: list of permission strings
         :return: boolean (allow or disallow run)
         """
 
-        # todo: work for any command
-        command_perms = self.config.permissions.ping_command.permission_config.model_dump()
+        command_perms = self.config.permissions.model_dump()[command_name]['permission_config']
+
+        allow_all = command_perms['unsubbed']
 
         for permission in command_perms:
             if command_perms[permission]:
-                if permission in ctx.author.badges:
+                if (permission in ctx.author.badges) or allow_all:
                     return True
 
         return False
@@ -188,11 +191,11 @@ class Bot(commands.Bot):
 
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
-        if not self._check_permissions(ctx=ctx, command_name="ping_command"):
-            return
-        await ctx.send(
-            f":) 🎶 ScryptTunes v{self.version} is online!"
-        )
+        if self._check_permissions(ctx=ctx, command_name="ping_command"):
+            await ctx.send(f":) 🎶 ScryptTunes v{self.version} is online!")
+        else:
+            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+        
 
     @commands.command(name="blacklistuser")
     async def blacklist_user(self, ctx, *, user: str):
@@ -277,44 +280,50 @@ class Bot(commands.Bot):
 
     @commands.command(name="np", aliases=["nowplaying", "song"])
     async def np_command(self, ctx):
-        data = self.sp.currently_playing()
-        song_artists = data["item"]["artists"]
-        song_artists_names = [artist["name"] for artist in song_artists]
+        if self._check_permissions(ctx=ctx, command_name="np_command"):
+            data = self.sp.currently_playing()
+            song_artists = data["item"]["artists"]
+            song_artists_names = [artist["name"] for artist in song_artists]
 
-        min_through = int(data["progress_ms"] / (1000 * 60) % 60)
-        sec_through = int(data["progress_ms"] / (1000) % 60)
-        time_through = f"{min_through} mins, {sec_through} secs"
+            min_through = int(data["progress_ms"] / (1000 * 60) % 60)
+            sec_through = int(data["progress_ms"] / (1000) % 60)
+            time_through = f"{min_through} mins, {sec_through} secs"
 
-        min_total = int(data["item"]["duration_ms"] / (1000 * 60) % 60)
-        sec_total = int(data["item"]["duration_ms"] / (1000) % 60)
-        time_total = f"{min_total} mins, {sec_total} secs"
+            min_total = int(data["item"]["duration_ms"] / (1000 * 60) % 60)
+            sec_total = int(data["item"]["duration_ms"] / (1000) % 60)
+            time_total = f"{min_total} mins, {sec_total} secs"
 
-        logging.info(
-            f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
-        await ctx.send(
-            f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
-        )
+            logging.info(
+                f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
+            await ctx.send(
+                f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
+            )
+        else:
+            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
 
     @commands.command(
-        name="lastsong", aliases=["previoussongs", "last", "previousplayed"]
+        name="lastsong", aliases=["previoussongs", "last", "previousplayed", "recent", "recentplayed"]
     )
     async def recent_played_command(self, ctx):
-        recents = self.sp.current_user_recently_played(limit=10)
-        songs = []
+        if self._check_permissions(ctx=ctx, command_name="recent_played_command"):
+            recents = self.sp.current_user_recently_played(limit=10)
+            songs = []
 
-        for song in recents["items"]:
-            # if the song artists include more than one artist: add all artist names to an artist list variable
-            if len(song["track"]["artists"]) > 1:
-                artists = [artist["name"] for artist in song["track"]["artists"]]
-                song_artists = ", ".join(artists)
-            # if the song artists only include one artist: add the artist name to the artist list variable
-            else:
-                song_artists = song["track"]["artists"][0]["name"]
+            for song in recents["items"]:
+                # if the song artists include more than one artist: add all artist names to an artist list variable
+                if len(song["track"]["artists"]) > 1:
+                    artists = [artist["name"] for artist in song["track"]["artists"]]
+                    song_artists = ", ".join(artists)
+                # if the song artists only include one artist: add the artist name to the artist list variable
+                else:
+                    song_artists = song["track"]["artists"][0]["name"]
 
-            songs.append(song["track"]["name"] + " - " + song_artists)
+                songs.append(song["track"]["name"] + " - " + song_artists)
 
-        logging.info("Recently Played: " + " | ".join(songs))
-        await ctx.send("Recently Played: " + " | ".join(songs))
+            logging.info("Recently Played: " + " | ".join(songs))
+            await ctx.send("Recently Played: " + " | ".join(songs))
+        else:
+            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
 
     @commands.command(
         name="queue", aliases=[]
@@ -331,30 +340,33 @@ class Bot(commands.Bot):
         :param ctx:
         :return:
         """
-        if self.last_song:
-            queue = self.sp.queue()
-            current_playback = self.sp.current_playback()
+        if self._check_permissions(ctx=ctx, command_name="queue_command"):
+            if self.last_song:
+                queue = self.sp.queue()
+                current_playback = self.sp.current_playback()
 
-            total_songs = 1
-            playlist_time_remaining = current_playback['item']['duration_ms'] - current_playback['progress_ms']
+                total_songs = 1
+                playlist_time_remaining = current_playback['item']['duration_ms'] - current_playback['progress_ms']
 
-            for song in queue['queue'][::-1]:
-                last_song_found = False
-                if song['id'] == self.last_song:
-                    last_song_found = True
-                if last_song_found:
-                    total_songs += 1
-                    playlist_time_remaining += song['duration_ms']
+                for song in queue['queue'][::-1]:
+                    last_song_found = False
+                    if song['id'] == self.last_song:
+                        last_song_found = True
+                    if last_song_found:
+                        total_songs += 1
+                        playlist_time_remaining += song['duration_ms']
 
-            total_seconds = playlist_time_remaining // 1000
-            hours = total_seconds // 3600
-            minutes = (total_seconds % 3600) // 60
-            seconds = total_seconds % 60
+                total_seconds = playlist_time_remaining // 1000
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                seconds = total_seconds % 60
 
-            await ctx.send(f'Songs In Queue: {total_songs}'
-                           f'| Next added song would play in: {hours} hours {minutes:02}:{seconds:02} minutes')
+                await ctx.send(f'Songs In Queue: {total_songs}'
+                               f'| Next added song would play in: {hours} hours {minutes:02}:{seconds:02} minutes')
+            else:
+                await ctx.send(f'Queue is empty!')
         else:
-            await ctx.send(f'Queue is empty!')
+            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
@@ -364,22 +376,25 @@ class Bot(commands.Bot):
 
     @commands.command(name="songrequest", aliases=["sr", "addsong"])
     async def songrequest_command(self, ctx, *, song: str = None):
-        if not song:
-            return await self.help_command(ctx)
-        try:
-            song_uri = None
-            if re.match(self.URL_REGEX, song):
-                if not is_valid_media_url(song, ctx):
-                    return
-                song_uri = song
-                await self.chat_song_request(ctx, song_uri, song_uri, album=False)
+        if self._check_permissions(ctx=ctx, command_name="songrequest_command"):
+            if not song:
+                return await self.help_command(ctx)
+            try:
+                song_uri = None
+                if re.match(self.URL_REGEX, song):
+                    if not is_valid_media_url(song, ctx):
+                        return
+                    song_uri = song
+                    await self.chat_song_request(ctx, song_uri, song_uri, album=False)
 
-            else:
-                await self.chat_song_request(ctx, song, song_uri, album=False)
-        except Exception as e:
-            # todo: ctx.send different messages based on error type/contents
-            logging.error(f"{e}")
-            await ctx.send(f"@{ctx.author.name}, there was an error with your request!")
+                else:
+                    await self.chat_song_request(ctx, song, song_uri, album=False)
+            except Exception as e:
+                # todo: ctx.send different messages based on error type/contents
+                logging.error(f"{e}")
+                await ctx.send(f"@{ctx.author.name}, there was an error with your request!")
+        else:
+            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
 
     # @commands.command(name="skip")
     # async def skip_song_command(self, ctx):
@@ -438,7 +453,7 @@ class Bot(commands.Bot):
                 if 'spotify' in song_uri:
                     if '.link/' in song_uri:  # todo: better way to handle this?
                         ctx.send(
-                            f'{ctx.author} Mobile link detected, attempting to get full url.')  # todo: verify this is sending?????
+                            f'@{ctx.author.name} Mobile link detected, attempting to get full url.')  # todo: verify this is sending?????
                         req_data = req.get(
                             song_uri,
                             allow_redirects=True,
