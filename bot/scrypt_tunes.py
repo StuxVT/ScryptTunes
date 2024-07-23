@@ -492,25 +492,24 @@ class Bot(commands.Bot):
                     return await ctx.send(f"@{ctx.author.name} Send a shorter song please! :3")
 
                 if self.config.rate_limit:
-                    if ctx.author in self.request_history and ctx.author != self.config.channel:
+                    if (ctx.author.name in self.request_history
+                            and ctx.author.name.lower() != self.config.channel.lower()):
                         if (
-                                datetime.datetime.now() - self.request_history[ctx.author]["last_request_time"]
+                                datetime.datetime.now() - self.request_history[ctx.author.name]["last_request_time"]
                         ).seconds < 300:
-                            return await ctx.send(f"@{ctx.author.name} You need to wait 10 minutes between requests!")
+                            return await ctx.send(f"@{ctx.author.name} You need to wait 5 minutes between requests!")
 
-                        self.request_history[ctx.author]["last_request_time"] = datetime.datetime.now()
-                        self.request_history[ctx.author]["last_requested_song_id"] = song_id
+                        self.request_history[ctx.author.name]["last_request_time"] = datetime.datetime.now()
+                        self.request_history[ctx.author.name]["last_requested_song_id"] = song_id
                         self.last_song = song_id
                     else:
-                        self.request_history[ctx.author] = {
+                        self.request_history[ctx.author.name] = {
                             "last_request_time": datetime.datetime.now(),
                             "last_requested_song_id": song_id
                         }
                         self.last_song = song_id
 
                 self.sp.add_to_queue(song_uri)
-                logging.info(
-                    f"Song successfully added to queue: ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ]")
                 await ctx.send(
                     f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                 )
