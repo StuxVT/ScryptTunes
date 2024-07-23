@@ -325,48 +325,42 @@ class Bot(commands.Bot):
         else:
             return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
 
-    @commands.command(
-        name="queue", aliases=[]
-    )
-    async def queue_command(self, ctx):
-        """
-        TODO: Handle case where user cares about "when is my song gonna play?"
-            - need to keep track of entire user's playback history
-            - can probably implement this when playlistqueue is implemented and
-                piggyback off its playback state watcher to update the user's request history
-
-        TODO: breaks if queue size greater than 20
-
-        :param ctx:
-        :return:
-        """
-        if self._check_permissions(ctx=ctx, command_name="queue_command"):
-            if self.last_song:
-                queue = self.sp.queue()
-                current_playback = self.sp.current_playback()
-
-                total_songs = 1
-                playlist_time_remaining = current_playback['item']['duration_ms'] - current_playback['progress_ms']
-
-                for song in queue['queue'][::-1]:
-                    last_song_found = False
-                    if song['id'] == self.last_song:
-                        last_song_found = True
-                    if last_song_found:
-                        total_songs += 1
-                        playlist_time_remaining += song['duration_ms']
-
-                total_seconds = playlist_time_remaining // 1000
-                hours = total_seconds // 3600
-                minutes = (total_seconds % 3600) // 60
-                seconds = total_seconds % 60
-
-                await ctx.send(f'Songs In Queue: {total_songs}'
-                               f'| Next added song would play in: {hours} hours {minutes:02}:{seconds:02} minutes')
-            else:
-                await ctx.send(f'Queue is empty!')
-        else:
-            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+    # @commands.command(
+    #     name="queue", aliases=["q"]
+    # )
+    # async def queue_command(self, ctx):
+    #     """
+    #     TODO: Handle case where user cares about "when is my song gonna play?"
+    #         - need to keep track of entire user's playback history
+    #         - can probably implement this when playlistqueue is implemented and
+    #             piggyback off its playback state watcher to update the user's request history
+    #
+    #     TODO: breaks if queue size greater than 20
+    #
+    #     :param ctx:
+    #     :return:
+    #     """
+    #     if self._check_permissions(ctx=ctx, command_name="queue_command"):
+    #         queue = self.sp.queue()
+    #         current_playback = self.sp.current_playback()
+    #
+    #         total_songs = 1
+    #         playlist_time_remaining = current_playback['item']['duration_ms'] - current_playback['progress_ms']
+    #
+    #         for song in queue['queue'][::-1]:
+    #             if not song['id'] == current_playback['item']['id']:  #  todo: keep set of song ids, dont allow duplicates in queue, remove once played
+    #                 total_songs += 1
+    #                 playlist_time_remaining += song['duration_ms']
+    #
+    #         total_seconds = playlist_time_remaining // 1000
+    #         hours = total_seconds // 3600
+    #         minutes = (total_seconds % 3600) // 60
+    #         seconds = total_seconds % 60
+    #
+    #         await ctx.send(f'Songs In Queue: {total_songs} '
+    #                        f'| Next added song would play in: {hours} hours {minutes:02} minutes {seconds:02} seconds')
+    #     else:
+    #         return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
