@@ -31,7 +31,7 @@ jobs:
           script-name: main.py
           standalone: true
           onefile: false
-          disable-console: true
+          disable-console: false
           enable-plugins: tk-inter
           windows-icon-from-ico: icon.ico
           output-dir: build
