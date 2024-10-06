@@ -1,15 +1,12 @@
-from customtkinter import CTkFrame, CTkLabel, CTkEntry
-
-from ui.frames.list_input import ListInput
+from customtkinter import CTkFrame, CTkLabel, CTkCheckBox, IntVar
 
 
-# TODO: the only making this different from text_setting_row is the nested list setting, these need parent
-class ListSettingRow(CTkFrame):
-    def __init__(
-        self, parent, setting_name: str, setting_description: str, initial_value: list
-    ):
+class CheckboxSettingRow(CTkFrame):
+    def __init__(self, parent, setting_name, setting_description, initial_value):
         super().__init__(parent)
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(
+            0, minsize=300
+        )  # todo: dynamic adjustment somehow based on context?
         self.columnconfigure(1, weight=2)
 
         label_frame = CTkFrame(self)
@@ -27,9 +24,11 @@ class ListSettingRow(CTkFrame):
 
         widget_frame = CTkFrame(self)
         widget_frame.grid(row=0, column=1, sticky="ew")
-
-        self.list_setting = ListInput(widget_frame, initial_value)
-        self.list_setting.pack()
+        self.value = IntVar(value=initial_value)
+        self.check_setting = CTkCheckBox(
+            widget_frame, variable=self.value, onvalue=1, offvalue=0, text=""
+        )
+        self.check_setting.pack()
 
     def get(self):
-        return self.list_setting.get()
+        return self.check_setting.get()

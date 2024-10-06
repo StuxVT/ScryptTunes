@@ -12,9 +12,6 @@ env/
 .idea/
 .vscode/
 
-# Git Config
-.github/
-
 # Logs
 logs/
 
