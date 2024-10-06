@@ -81,11 +81,10 @@ jobs:
           makeLatest: true
 
       - name: Release for pre branch
-        if: github.ref == 'refs/heads/pre'
+        if: github.event_name == 'pull_request' && github.base_ref == 'pre'
         uses: ncipollo/release-action@v1
         with:
           artifacts: "./build/ScryptTunesInstaller.exe"
           skipIfReleaseExists: True
           tag: pre-${{ steps.version.outputs.version }}
           prerelease: true
-
