@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
       - pre
 
 jobs:
@@ -31,19 +33,19 @@ jobs:
           script-name: main.py
           standalone: true
           onefile: false
-          disable-console: false
+          disable-console: true
           enable-plugins: tk-inter
           windows-icon-from-ico: icon.ico
           output-dir: build
           output-file: ScryptTunes.exe
           include-data-files: icon.ico=icon.ico
 
-      - name: sign exe
-        uses: dlemstra/code-sign-action@v1
-        with:
-          certificate: '${{ secrets.SIGNING_KEY }}'
-          password: '${{ secrets.CERT_PASSWORD }}'
-          files: './build/main.dist/ScryptTunes.exe'
+      # - name: sign exe
+      #   uses: dlemstra/code-sign-action@v1
+      #   with:
+      #     certificate: '${{ secrets.SIGNING_KEY }}'
+      #     password: '${{ secrets.CERT_PASSWORD }}'
+      #     files: './build/main.dist/ScryptTunes.exe'
 
       - name: Install NSIS
         run: |
@@ -56,12 +58,12 @@ jobs:
       - name: Create Installer
         run: makensis installer.nsi
 
-      - name: sign installer
-        uses: dlemstra/code-sign-action@v1
-        with:
-          certificate: '${{ secrets.SIGNING_KEY }}'
-          password: '${{ secrets.CERT_PASSWORD }}'
-          files: './build/ScryptTunesInstaller.exe'
+      # - name: sign installer
+      #   uses: dlemstra/code-sign-action@v1
+      #   with:
+      #     certificate: '${{ secrets.SIGNING_KEY }}'
+      #     password: '${{ secrets.CERT_PASSWORD }}'
+      #     files: './build/ScryptTunesInstaller.exe'
 
       - name: Get version from file
         id: version
@@ -79,11 +81,10 @@ jobs:
           makeLatest: true
 
       - name: Release for pre branch
-        if: github.ref == 'refs/heads/pre'
+        if: github.event_name == 'pull_request' && github.base_ref == 'pre'
         uses: ncipollo/release-action@v1
         with:
           artifacts: "./build/ScryptTunesInstaller.exe"
           skipIfReleaseExists: True
           tag: pre-${{ steps.version.outputs.version }}
           prerelease: true
-
