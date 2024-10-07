@@ -1,4 +1,6 @@
-Instructions broken oopsies, will fix soon, contact me if you need help setting up
+## Need to rewrite instructions to be more comprehensive, if you need help, contact me. Happy to help set up:
+- Discord: @stuxvt
+- Twitter: @stuxvt
 
 # ScryptTunes
 
@@ -28,11 +30,12 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
     - **Token**: Get your Twitch OAuth token from [Twitch Chat OAuth Password Generator](https://twitchapps.com/tmi/).
       - This is a safe resource that generates the token locally on the browser. Don't share it with anyone.
 
-![](https://cdn.discordapp.com/attachments/933618197213622272/1165117190459101184/image.png?ex=6545aef1&is=653339f1&hm=41cb6634efb36fe66acddfd7e79152523c3755d9759e2cfc735f4b67f3a382fa&)
+![image](https://github.com/user-attachments/assets/7a6456b1-9469-43d5-92e9-9b564998cfd3)
 
 ### 2. Setting Up Spotify
 1. Visit the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/applications).
 2. Click "Create an App" and fill in the necessary details.
+ a. The only important one to get is to fill the "redirect uri" as `http://localhost:8080` WITHOUT A SLASH AT THE END 
 
 ![](https://media.discordapp.net/attachments/1057578958029328426/1175910820920709120/image.png?ex=656cf34b&is=655a7e4b&hm=fe42ffadc477e71d8c4ea63c787193ea086c026dbffc530efd960c0ac38e0039&=&width=747&height=672)
 
@@ -49,7 +52,7 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 1. Visit the [Twitch Developer Console](https://dev.twitch.tv/console).
 2. Click "Applications" >> "Register Your Application" and fill in the necessary details.
 
-![](https://cdn.discordapp.com/attachments/1057578958029328426/1175918725602480238/image.png?ex=656cfaa7&is=655a85a7&hm=24698461db8b1340263c9bb5180301c67fdd0cc97f0071fd437ebbf1879747dd&)
+![image](https://github.com/user-attachments/assets/57b52867-ae39-412d-b1d4-059d38dfbf66)
 
 3. Click on "Manage" for your app
 
@@ -61,8 +64,6 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 
 ### 4. App Settings
 ### ${\color{red}BE \space SURE \space TO \space CLICK \space SAVE}$
-Once finished, your app settings should look like this:
-![](https://cdn.discordapp.com/attachments/1057578958029328426/1175921010713833482/image.png?ex=656cfcc8&is=655a87c8&hm=1dabaad81cd9b3592e815a3eb7a558c3394195b0b146c8fe840a3da45c3bea80&)
 
 ## Usage
 1. Start playing music on Spotify
