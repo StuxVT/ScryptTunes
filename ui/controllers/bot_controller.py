@@ -69,8 +69,6 @@ class BotController:
         self.bot = Bot()
         # Run the bot
         self.bot_task = self.loop.create_task(self.bot.start())
-        # Setup PubSub
-        # self.loop.run_until_complete(self.bot.setup_pubsub())
 
         self.loop.run_forever()
 

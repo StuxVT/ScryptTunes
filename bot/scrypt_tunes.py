@@ -1,32 +1,25 @@
 # Standard Library
-import asyncio
 import datetime
 import json
 import logging
 import os
 import re
+import requests
 from urllib import request as url_request
 from urllib.parse import quote
 
-import requests
 # Third-Party
 import requests as req
 import spotipy
-import twitchio
-from aiohttp.log import client_logger
-from pydantic import ValidationError
 from spotipy.oauth2 import SpotifyOAuth
-from twitchio import Message, Chatter, Channel
-from twitchio.ext import commands, pubsub
+from twitchio.ext import commands, eventsub
 from twitchio.ext.commands import Context
-from twitchio.ext.commands.stringparser import StringParser
 
 # Local
 from bot.blacklists import read_json, write_json
-from constants import CACHE, CONFIG
+from constants import CACHE
 from bot.oauth_controller import initialize_oauth
 from ui.controllers.settings_controller import SettingsController
-from ui.models.config import Config
 
 
 async def is_valid_media_url(url: str, ctx: Context) -> bool:
@@ -68,9 +61,7 @@ def get_user_id(username, client_id, access_token):
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.pubsub_client = None
-
-        #pre-config
+        # Load Config
         self.settings_controller = SettingsController(root=None)  # Assume no root for CLI application
         self.config = self.settings_controller.config_model
 
@@ -94,8 +85,10 @@ class Bot(commands.Bot):
             nick=self.config.nickname,
             prefix=self.config.prefix,
             initial_channels=[self.config.channel],
-            case_insensitive=True
+            case_insensitive=True,
         )
+
+        self.esclient = eventsub.EventSubWSClient(self)
 
         self.token = os.environ.get("SPOTIFY_AUTH")
         self.version = "0.3"
@@ -151,6 +144,12 @@ class Bot(commands.Bot):
     async def event_ready(self):
         logging.info("\n" * 100)
         logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
+
+    async def sub(self):
+        await self.esclient.subscribe_channel_points_redeemed(broadcaster=self.config.channel_id, token=self.token)
+
+    async def event_channel_reward_redeem(self, payload: eventsub.CustomRewardRedemptionAddUpdateData):
+        print(payload)
 
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
