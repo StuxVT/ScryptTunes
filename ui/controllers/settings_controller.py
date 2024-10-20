@@ -1,5 +1,4 @@
 import os.path
-
 import customtkinter as ctk
 import json
 from os import path
@@ -10,7 +9,6 @@ from ui.models.user_blacklist import UserBlacklist
 from ui.models.config import Config, PermissionSettingDict, PermissionConfig, PermissionSetting
 from ui.views.general_settings_view import GeneralSettingsView
 from ui.views.permission_settings_view import PermissionSettingsView
-
 
 class SettingsController:
     def __init__(self, root: ctk.CTk):
@@ -37,7 +35,7 @@ class SettingsController:
             with open(constants.CONFIG) as f:
                 config_data = json.load(f)
                 if 'permissions' not in config_data:
-                    config_data['permissions'] = {  # todo: find way not to hardcode so much
+                    config_data['permissions'] = {
                         "ping_command": PermissionSetting(
                             command_name="ping_command",
                             permission_config=PermissionConfig()
@@ -59,6 +57,11 @@ class SettingsController:
                             permission_config=PermissionConfig()
                         ),
                     }
+                # Ensure refresh_token and channel_id are in config_data
+                if 'refresh_token' not in config_data:
+                    config_data['refresh_token'] = ""
+                if 'channel_id' not in config_data:
+                    config_data['channel_id'] = None
                 self.config_model = Config(**config_data)
         else:
             self.config_model = Config()
@@ -71,6 +74,7 @@ class SettingsController:
     def set(self, key, value):
         # todo, validate and handle errors
         setattr(self.config_model, key, value)
+        self.save_config()
         return True
 
     def save_config(self):
@@ -92,3 +96,10 @@ class SettingsController:
     def show_permissions_settings_window(self):
         x_offset, y_offset = map(int, self.root.geometry().split('+')[1:3])
         PermissionSettingsView(self, geometry=f"{800}x{600}+{x_offset}+{y_offset}").grab_set()  # grab focus until closed
+
+    def update_oauth_tokens(self, access_token, refresh_token):
+        self.set('token', access_token)
+        self.set('refresh_token', refresh_token)
+
+    def update_channel_id(self, channel_id):
+        self.set('channel_id', channel_id)

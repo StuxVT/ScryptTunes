@@ -1,7 +1,5 @@
 from typing import List
-
 from pydantic import BaseModel
-
 
 class PermissionConfig(BaseModel):
     unsubbed: bool = False
@@ -10,11 +8,9 @@ class PermissionConfig(BaseModel):
     mod: bool = True
     broadcaster: bool = True
 
-
 class PermissionSetting(BaseModel):
     command_name: str
     permission_config: PermissionConfig
-
 
 class PermissionSettingDict(BaseModel):
     ping_command: PermissionSetting
@@ -23,12 +19,13 @@ class PermissionSettingDict(BaseModel):
     recent_played_command: PermissionSetting
     songrequest_command: PermissionSetting
 
-
 class Config(BaseModel):
     nickname: str = ""
     prefix: str = "!"
     channel: str = ""
+    channel_id: int = None
     token: str = ""
+    refresh_token: str = ""
     client_id: str = ""
     client_secret: str = ""
     channel_points_reward: str = ""

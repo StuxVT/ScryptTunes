@@ -5,27 +5,27 @@ import json
 import logging
 import os
 import re
-from enum import Enum
 from urllib import request as url_request
 from urllib.parse import quote
 
+import requests
 # Third-Party
 import requests as req
 import spotipy
+import twitchio
+from aiohttp.log import client_logger
 from pydantic import ValidationError
 from spotipy.oauth2 import SpotifyOAuth
-from twitchAPI.oauth import UserAuthenticator
-from twitchAPI.pubsub import PubSub
-from twitchAPI.twitch import Twitch
-from twitchAPI.types import AuthScope
 from twitchio import Message, Chatter, Channel
-from twitchio.ext import commands
+from twitchio.ext import commands, pubsub
 from twitchio.ext.commands import Context
 from twitchio.ext.commands.stringparser import StringParser
 
 # Local
 from bot.blacklists import read_json, write_json
-from constants import CACHE, CONFIG, Permission
+from constants import CACHE, CONFIG
+from bot.oauth_controller import initialize_oauth
+from ui.controllers.settings_controller import SettingsController
 from ui.models.config import Config
 
 
@@ -49,15 +49,45 @@ async def is_valid_media_url(url: str, ctx: Context) -> bool:
 
     return True
 
+def get_user_id(username, client_id, access_token):
+    url = 'https://api.twitch.tv/helix/users'
+    headers = {
+        'Client-ID': client_id,
+        'Authorization': f'Bearer {access_token}'
+    }
+    params = {
+        'login': username
+    }
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
+    data = response.json()['data']
+    if data:
+        return int(data[0]['id'])
+    else:
+        return None
 
 class Bot(commands.Bot):
     def __init__(self):
-        with open(CONFIG) as config_file:
-            config_data = json.load(config_file)
-        try:
-            self.config = Config(**config_data)
-        except ValidationError:
-            self.config = Config()
+        self.pubsub_client = None
+
+        #pre-config
+        self.settings_controller = SettingsController(root=None)  # Assume no root for CLI application
+        self.config = self.settings_controller.config_model
+
+        # Initialize OAuth
+        self.oauth_connector = initialize_oauth(self.settings_controller)
+
+        # Re-load verified config
+        self.settings_controller = SettingsController(root=None)
+        self.settings_controller.update_channel_id(
+            get_user_id(
+                username=self.config.channel,
+                client_id=self.config.client_id,
+                access_token=self.config.token
+            )
+        )
+        self.config = self.settings_controller.config_model
+
         super().__init__(
             token=self.config.token,
             client_id=self.config.client_id,
@@ -119,75 +149,8 @@ class Bot(commands.Bot):
         return False
 
     async def event_ready(self):
-        if self.config.channel_points_reward:
-            # Set up TwitchAPI Sub for Channel Point Redeems
-            twitch = Twitch(self.config.client_id, self.config.client_secret)
-            twitch.authenticate_app([])
-            target_scope: list = [AuthScope.CHANNEL_READ_REDEMPTIONS]
-            auth = UserAuthenticator(twitch, target_scope, force_verify=False)
-            token, refresh_token = auth.authenticate()
-            twitch.set_user_authentication(token, target_scope, refresh_token)
-
-            user_id: str = twitch.get_users(logins=[self.config.channel])["data"][0]["id"]
-
-            pubsub = PubSub(twitch)
-            uuid = pubsub.listen_channel_points(user_id, self.channel_point_event)
-            pubsub.start()
-
         logging.info("\n" * 100)
         logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
-
-    def channel_point_event(self, uuid, data):
-        # TODO: ctx.send not working when invoking song requests through redeem
-        if (
-                data["data"]["redemption"]["reward"]["title"].lower()
-                != self.config.channel_points_reward.lower()
-        ):
-            return
-
-        song: str = data["data"]["redemption"]["user_input"]
-        blacklisted_users = read_json("blacklist_user")["users"]
-        if data["data"]["redemption"]["user"]["login"] in blacklisted_users:
-            return
-
-        # Create fake context for injection into song request event
-        websocket = self._connection
-        chatter = Chatter(
-            websocket=websocket,  # todo
-            name=data["data"]["redemption"]["user"]["login"],
-            channel=data["data"]["redemption"]["channel_id"],
-            tags={
-                'user-id': data["data"]["redemption"]["user"]["id"],
-                'subscriber': '0',  # todo
-                'mod': '0',  # todo
-                'display-name': data["data"]["redemption"]["user"]["display_name"],
-                'color': '#000000',  # todo
-                'vip': '0',  # todo
-            }
-        )
-        message = Message(
-            content=song,
-            author=chatter,
-            channel=Channel(name=data["data"]["redemption"]["channel_id"], websocket=websocket),
-            tags={
-                'id': data["data"]["redemption"]["id"],
-                'tmi-sent-ts': datetime.datetime.now().timestamp() * 1000,
-            }
-        )
-        view = StringParser()
-        view.process_string(song)
-        ctx = Context(
-            message=message,
-            bot=self,
-            prefix=self.config.prefix,
-            command=self.songrequest_command,
-            args=[],  # n/a
-            kwargs={},  # n/a
-            valid=True,
-            view=view
-        )
-
-        asyncio.run_coroutine_threadsafe(self.invoke(context=ctx), asyncio.get_event_loop())
 
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
@@ -195,7 +158,6 @@ class Bot(commands.Bot):
             await ctx.send(f":) 🎶 ScryptTunes v{self.version} is online!")
         else:
             return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
-        
 
     @commands.command(name="blacklistuser")
     async def blacklist_user(self, ctx, *, user: str):
@@ -514,22 +476,3 @@ class Bot(commands.Bot):
                     f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                 )
 
-    # def _require_permissions(self, ctx, permission_set):
-    #     """
-    #     RBAC for commands
-    #
-    #     Roles:
-    #         - Twitch Users
-    #             - Unsubbed
-    #             - Subbed (could do tiers)
-    #             - VIP
-    #
-    #         - Admins
-    #             - twitch mods
-    #             - streamer
-    #
-    #     :param ctx: context param from twitchio
-    #     :param permission_set: list of permission strings
-    #     :return:
-    #     """
-    #     pass
