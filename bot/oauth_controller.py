@@ -16,7 +16,7 @@ class OAuthConnector:
         self.token_url = "https://id.twitch.tv/oauth2/token"
         self.validate_url = "https://id.twitch.tv/oauth2/validate"
         self.redirect_uri = "http://localhost:17563"
-        self.scopes = ["chat:read", "chat:edit", "channel:read:redemptions"]
+        self.scopes = ["chat:read", "chat:edit", "channel:read:redemptions", "channel:bot"]
         self.auth_successful = False
 
     def start_auth_flow(self):
