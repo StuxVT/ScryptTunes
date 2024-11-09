@@ -4,6 +4,8 @@ import threading
 from typing import Optional
 from datetime import datetime, timedelta
 
+from bot.scrypt_tunes import Bot
+
 class ResilientBot(Bot):
     def __init__(self):
         super().__init__()
