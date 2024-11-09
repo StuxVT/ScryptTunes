@@ -14,10 +14,6 @@ import requests as req
 import spotipy
 from pydantic import ValidationError
 from spotipy.oauth2 import SpotifyOAuth
-from twitchAPI.oauth import UserAuthenticator
-from twitchAPI.pubsub import PubSub
-from twitchAPI.twitch import Twitch
-from twitchAPI.types import AuthScope
 from twitchio import Message, Chatter, Channel
 from twitchio.ext import commands
 from twitchio.ext.commands import Context
@@ -119,75 +115,8 @@ class Bot(commands.Bot):
         return False
 
     async def event_ready(self):
-        if self.config.channel_points_reward:
-            # Set up TwitchAPI Sub for Channel Point Redeems
-            twitch = Twitch(self.config.client_id, self.config.client_secret)
-            twitch.authenticate_app([])
-            target_scope: list = [AuthScope.CHANNEL_READ_REDEMPTIONS]
-            auth = UserAuthenticator(twitch, target_scope, force_verify=False)
-            token, refresh_token = auth.authenticate()
-            twitch.set_user_authentication(token, target_scope, refresh_token)
-
-            user_id: str = twitch.get_users(logins=[self.config.channel])["data"][0]["id"]
-
-            pubsub = PubSub(twitch)
-            uuid = pubsub.listen_channel_points(user_id, self.channel_point_event)
-            pubsub.start()
-
         logging.info("\n" * 100)
         logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
-
-    def channel_point_event(self, uuid, data):
-        # TODO: ctx.send not working when invoking song requests through redeem
-        if (
-                data["data"]["redemption"]["reward"]["title"].lower()
-                != self.config.channel_points_reward.lower()
-        ):
-            return
-
-        song: str = data["data"]["redemption"]["user_input"]
-        blacklisted_users = read_json("blacklist_user")["users"]
-        if data["data"]["redemption"]["user"]["login"] in blacklisted_users:
-            return
-
-        # Create fake context for injection into song request event
-        websocket = self._connection
-        chatter = Chatter(
-            websocket=websocket,  # todo
-            name=data["data"]["redemption"]["user"]["login"],
-            channel=data["data"]["redemption"]["channel_id"],
-            tags={
-                'user-id': data["data"]["redemption"]["user"]["id"],
-                'subscriber': '0',  # todo
-                'mod': '0',  # todo
-                'display-name': data["data"]["redemption"]["user"]["display_name"],
-                'color': '#000000',  # todo
-                'vip': '0',  # todo
-            }
-        )
-        message = Message(
-            content=song,
-            author=chatter,
-            channel=Channel(name=data["data"]["redemption"]["channel_id"], websocket=websocket),
-            tags={
-                'id': data["data"]["redemption"]["id"],
-                'tmi-sent-ts': datetime.datetime.now().timestamp() * 1000,
-            }
-        )
-        view = StringParser()
-        view.process_string(song)
-        ctx = Context(
-            message=message,
-            bot=self,
-            prefix=self.config.prefix,
-            command=self.songrequest_command,
-            args=[],  # n/a
-            kwargs={},  # n/a
-            valid=True,
-            view=view
-        )
-
-        asyncio.run_coroutine_threadsafe(self.invoke(context=ctx), asyncio.get_event_loop())
 
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
@@ -384,52 +313,11 @@ class Bot(commands.Bot):
                 else:
                     await self.chat_song_request(ctx, song, song_uri, album=False)
             except Exception as e:
-                # todo: ctx.send different messages based on error type/contents
-                logging.error(f"{e}")
+                import traceback
+                logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
                 await ctx.send(f"@{ctx.author.name}, there was an error with your request!")
         else:
             return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
-
-    # @commands.command(name="skip")
-    # async def skip_song_command(self, ctx):
-    #     sp.next_track()
-    #     await ctx.send(f":) 🎶 Skipping song...")
-
-    # @commands.command(name="albumqueue")
-    #     if ctx.author.is_mod or ctx.author.is_subscriber:
-    # async def albumqueue_command(self, ctx, *, album: str):
-    #         album_uri = None
-
-    #         if (
-    #             album.startswith("spotify:album:")
-    #             or not album.startswith("spotify:album:")
-    #             and re.match(self.URL_REGEX, album)
-    #         ):
-    #             album_uri = album
-    #         await self.album_request(ctx, album_uri)
-    #     else:
-    #         await ctx.send(f"🎶You don't have permission to do that! (Album queue is Sub Only!)")
-
-    """
-        DO NOT USE THE API REQUEST IT WONT WORK.
-        the logic should still work iwth using the spotipy library, so thats why I'm keeping it, but don't do an API request
-        - like this.
-    """
-
-    # async def album_request(self, ctx, song):
-    #     song = song.replace("spotify:album:", "")
-    #     ALBUM_URL = f"https://api.spotify.com/v1/albums/{song}?market=US"
-    #     async with request("GET", ALBUM_URL, headers={
-    #                 "Content-Type": "application/json",
-    #                 "Authorization": "Bearer " + self.token,
-    #             }) as resp:
-    #             data = await resp.json()
-    #             songs_uris = [artist["uri"] for artist in data['tracks']['items']]
-
-    #             for song_uris in songs_uris:
-    #                 await self.song_request(ctx, song, song_uris, album=True)
-    #             await ctx.send(f"Album Requested! {data['name']}")
-    #             return
 
     async def chat_song_request(self, ctx, song, song_uri, album: bool, requests=None):
         blacklisted_users = read_json("blacklist_user")["users"]
@@ -513,23 +401,3 @@ class Bot(commands.Bot):
                 await ctx.send(
                     f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                 )
-
-    # def _require_permissions(self, ctx, permission_set):
-    #     """
-    #     RBAC for commands
-    #
-    #     Roles:
-    #         - Twitch Users
-    #             - Unsubbed
-    #             - Subbed (could do tiers)
-    #             - VIP
-    #
-    #         - Admins
-    #             - twitch mods
-    #             - streamer
-    #
-    #     :param ctx: context param from twitchio
-    #     :param permission_set: list of permission strings
-    #     :return:
-    #     """
-    #     pass
