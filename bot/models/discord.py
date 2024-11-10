@@ -8,9 +8,6 @@ WEBHOOK_URL = "https://discord.com/api/webhooks/1304979203204321320/oRZ0tLIc1Wso
 
 class Author(BaseModel):
     name: str
-    url: Optional[HttpUrl] = None
-    icon_url: Optional[HttpUrl] = None
-
 
 class Field_(BaseModel):
     name: str
@@ -43,23 +40,17 @@ class AllowedMentions(BaseModel):
 class Embed(BaseModel):
     author: Optional[Author] = None
     title: Optional[str] = None
-    url: Optional[HttpUrl] = None
+    url: Optional[str] = None
     description: Optional[str] = None
     color: Optional[int] = None
-    fields: Optional[List[Field_]] = None
-    thumbnail: Optional[Thumbnail] = None
-    image: Optional[Image] = None
-    footer: Optional[Footer] = None
-    timestamp: Optional[datetime] = None
 
 
 class DiscordWebhook(BaseModel):
     username: Optional[str] = None
-    avatar_url: Optional[HttpUrl] = None
+    avatar_url: Optional[str] = None
     content: Optional[str] = Field(None, max_length=2000)
     embeds: Optional[List[Embed]] = None
     tts: Optional[bool] = False
-    allowed_mentions: Optional[AllowedMentions] = None
 
     class Config:
         model_config = {

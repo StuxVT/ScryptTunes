@@ -10,14 +10,14 @@ from urllib.parse import quote
 # Third-Party
 import requests as req
 import spotipy
-from pydantic import ValidationError
+from pydantic import ValidationError, HttpUrl
 from spotipy.oauth2 import SpotifyOAuth
 from twitchio.ext import commands
 from twitchio.ext.commands import Context
 
 # Local
 from bot.blacklists import read_json, write_json
-from bot.models.discord import DiscordWebhook
+from bot.models.discord import DiscordWebhook, Embed, Author
 from constants import CACHE, CONFIG
 from ui.models.config import Config
 
@@ -119,9 +119,9 @@ class Bot(commands.Bot):
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
         if self._check_permissions(ctx=ctx, command_name="ping_command"):
-            await ctx.send(f":) 🎶 ScryptTunes v{self.version} is online!")
+            await ctx.send(f":) ScryptTunes v{self.version} is online!")
         else:
-            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+            return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
         
 
     @commands.command(name="blacklistuser")
@@ -221,12 +221,12 @@ class Bot(commands.Bot):
             time_total = f"{min_total} mins, {sec_total} secs"
 
             logging.info(
-                f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
+                f"Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
             await ctx.send(
-                f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
+                f"Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
             )
         else:
-            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+            return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
     @commands.command(
         name="lastsong", aliases=["previoussongs", "last", "previousplayed", "recent", "recentplayed"]
@@ -250,7 +250,7 @@ class Bot(commands.Bot):
             logging.info("Recently Played: " + " | ".join(songs))
             await ctx.send("Recently Played: " + " | ".join(songs))
         else:
-            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+            return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
     # @commands.command(
     #     name="queue", aliases=["q"]
@@ -287,7 +287,7 @@ class Bot(commands.Bot):
     #         await ctx.send(f'Songs In Queue: {total_songs} '
     #                        f'| Next added song would play in: {hours} hours {minutes:02} minutes {seconds:02} seconds')
     #     else:
-    #         return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+    #         return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
@@ -313,12 +313,24 @@ class Bot(commands.Bot):
             except Exception as e:
                 import traceback
                 logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
-                DiscordWebhook.send_message(
-                    f"{ctx.author} | {ctx.message.content} | Error: {str(e)}\nStack trace:\n{traceback.format_exc()}"
-                )
                 await ctx.send(f"@{ctx.author.name}, there was an error with your request!")
+                DiscordWebhook.send_message(
+                    content="<@948699796066144337> WE HAVE A PROBLEM",
+                    username="Scrypt",
+                    avatar_url="https://stux.ai/static/cryy.png",
+                    embeds=[
+                        Embed(
+                            author=Author(name=f"{ctx.author.name}"),
+                            title=f"Song Request Error in {ctx.author.channel.name}'s Channel",
+                            url=f"https://twitch.tv/{ctx.author.channel.name}",
+                            description=f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}",
+                            timestamp=datetime.datetime.now(),
+                        )
+                    ]
+
+                )
         else:
-            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+            return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
     async def chat_song_request(self, ctx, song, song_uri, album: bool, requests=None):
         blacklisted_users = read_json("blacklist_user")["users"]
