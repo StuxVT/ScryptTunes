@@ -1,11 +1,9 @@
 # Standard Library
-import asyncio
 import datetime
 import json
 import logging
 import os
 import re
-from enum import Enum
 from urllib import request as url_request
 from urllib.parse import quote
 
@@ -14,15 +12,15 @@ import requests as req
 import spotipy
 from pydantic import ValidationError
 from spotipy.oauth2 import SpotifyOAuth
-from twitchio import Message, Chatter, Channel
 from twitchio.ext import commands
 from twitchio.ext.commands import Context
-from twitchio.ext.commands.stringparser import StringParser
 
 # Local
 from bot.blacklists import read_json, write_json
-from constants import CACHE, CONFIG, Permission
+from bot.models.discord import DiscordWebhook
+from constants import CACHE, CONFIG
 from ui.models.config import Config
+
 
 
 async def is_valid_media_url(url: str, ctx: Context) -> bool:
@@ -315,6 +313,9 @@ class Bot(commands.Bot):
             except Exception as e:
                 import traceback
                 logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
+                DiscordWebhook.send_message(
+                    f"{ctx.author} | {ctx.message.content} | Error: {str(e)}\nStack trace:\n{traceback.format_exc()}"
+                )
                 await ctx.send(f"@{ctx.author.name}, there was an error with your request!")
         else:
             return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
