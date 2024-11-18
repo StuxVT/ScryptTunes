@@ -1,9 +1,11 @@
 # Standard Library
+import asyncio
 import datetime
 import json
 import logging
 import os
 import re
+import traceback
 from urllib import request as url_request
 from urllib.parse import quote
 
@@ -14,6 +16,7 @@ from pydantic import ValidationError, HttpUrl
 from spotipy.oauth2 import SpotifyOAuth
 from twitchio.ext import commands
 from twitchio.ext.commands import Context
+import urllib3
 
 # Local
 from bot.blacklists import read_json, write_json
@@ -78,7 +81,7 @@ class Bot(commands.Bot):
                     "user-read-currently-playing",
                     "user-read-playback-state",
                     "user-read-recently-played",
-                ],
+                ]
             )
         )
 
@@ -300,20 +303,47 @@ class Bot(commands.Bot):
         if self._check_permissions(ctx=ctx, command_name="songrequest_command"):
             if not song:
                 return await self.help_command(ctx)
+        
+        max_retries = 3
+        for attempt in range(max_retries):
             try:
                 song_uri = None
                 if re.match(self.URL_REGEX, song):
-                    if not is_valid_media_url(song, ctx):
+                    if not await is_valid_media_url(song, ctx):
                         return
                     song_uri = song
                     await self.chat_song_request(ctx, song_uri, song_uri, album=False)
-
                 else:
                     await self.chat_song_request(ctx, song, song_uri, album=False)
-            except Exception as e:
-                import traceback
+                return  # Success! Exit the retry loop
+                
+            except (req.exceptions.ConnectionError, 
+                    urllib3.exceptions.ProtocolError,
+                    spotipy.exceptions.SpotifyException) as e:
+                
+                if attempt < max_retries - 1:  # Still have retries left
+                    logging.info(f"Spotify connection failed, attempt {attempt + 1}/{max_retries}. Recreating client...")
+                    # Recreate the Spotify client
+                    self.sp = spotipy.Spotify(
+                        auth_manager=SpotifyOAuth(
+                            client_id=self.config.spotify_client_id,
+                            client_secret=self.config.spotify_secret,
+                            redirect_uri="http://localhost:8080",
+                            cache_path=CACHE,
+                            scope=[
+                                "user-modify-playback-state",
+                                "user-read-currently-playing",
+                                "user-read-playback-state",
+                                "user-read-recently-played",
+                            ],
+                        )
+                    )
+                    await asyncio.sleep(1)
+                    continue
+                
+                # If we're here, we've exhausted all retries
                 logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
-                await ctx.send(f"@{ctx.author.name}, there was an error with your request!")
+                await ctx.send(f"@{ctx.author.name}, there was an error with your request after {max_retries} attempts!")
                 DiscordWebhook.send_message(
                     content="<@948699796066144337> WE HAVE A PROBLEM",
                     username="Scrypt",
@@ -322,12 +352,10 @@ class Bot(commands.Bot):
                         Embed(
                             author=Author(name=f"{ctx.author.name}"),
                             title=f"Song Request Error in {ctx.author.channel.name}'s Channel",
-                            url=f"https://twitch.tv/{ctx.author.channel.name}",
                             description=f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}",
                             timestamp=datetime.datetime.now(),
                         )
                     ]
-
                 )
         else:
             return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
