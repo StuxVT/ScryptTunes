@@ -32,13 +32,13 @@ jobs:
           nuitka-version: main
           script-name: main.py
           standalone: true
-          onefile: false
           disable-console: true
           enable-plugins: tk-inter
           windows-icon-from-ico: icon.ico
           output-dir: build
           output-file: ScryptTunes.exe
           include-data-files: icon.ico=icon.ico
+          mode: onefile
 
       # - name: sign exe
       #   uses: dlemstra/code-sign-action@v1
