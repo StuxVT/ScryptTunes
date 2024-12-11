@@ -82,7 +82,8 @@ class Bot(commands.Bot):
                     "user-read-playback-state",
                     "user-read-recently-played",
                 ]
-            )
+            ),
+            requests_timeout=10,
         )
 
         self.URL_REGEX = (
@@ -304,59 +305,61 @@ class Bot(commands.Bot):
             if not song:
                 return await self.help_command(ctx)
         
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                song_uri = None
-                if re.match(self.URL_REGEX, song):
-                    if not await is_valid_media_url(song, ctx):
-                        return
-                    song_uri = song
-                    await self.chat_song_request(ctx, song_uri, song_uri, album=False)
-                else:
-                    await self.chat_song_request(ctx, song, song_uri, album=False)
-                return  # Success! Exit the retry loop
-                
-            except (req.exceptions.ConnectionError, 
-                    urllib3.exceptions.ProtocolError,
-                    spotipy.exceptions.SpotifyException) as e:
-                
-                if attempt < max_retries - 1:  # Still have retries left
-                    logging.info(f"Spotify connection failed, attempt {attempt + 1}/{max_retries}. Recreating client...")
-                    # Recreate the Spotify client
-                    self.sp = spotipy.Spotify(
-                        auth_manager=SpotifyOAuth(
-                            client_id=self.config.spotify_client_id,
-                            client_secret=self.config.spotify_secret,
-                            redirect_uri="http://localhost:8080",
-                            cache_path=CACHE,
-                            scope=[
-                                "user-modify-playback-state",
-                                "user-read-currently-playing",
-                                "user-read-playback-state",
-                                "user-read-recently-played",
-                            ],
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    song_uri = None
+                    if re.match(self.URL_REGEX, song):
+                        if not await is_valid_media_url(song, ctx):
+                            return
+                        song_uri = song
+                        await self.chat_song_request(ctx, song_uri, song_uri, album=False)
+                    else:
+                        await self.chat_song_request(ctx, song, song_uri, album=False)
+
+                    logging.info(f"Song request successful for user: {ctx.author.name}, Song: {song}")
+                    return  # Success! Exit the retry loop
+                    
+                except (req.exceptions.ConnectionError, 
+                        urllib3.exceptions.ProtocolError,
+                        spotipy.exceptions.SpotifyException) as e:
+                    
+                    if attempt < max_retries - 1:  # Still have retries left
+                        logging.info(f"Spotify connection failed, attempt {attempt + 1}/{max_retries}. Recreating client...")
+                        # Recreate the Spotify client
+                        self.sp = spotipy.Spotify(
+                            auth_manager=SpotifyOAuth(
+                                client_id=self.config.spotify_client_id,
+                                client_secret=self.config.spotify_secret,
+                                redirect_uri="http://localhost:8080",
+                                cache_path=CACHE,
+                                scope=[
+                                    "user-modify-playback-state",
+                                    "user-read-currently-playing",
+                                    "user-read-playback-state",
+                                    "user-read-recently-played",
+                                ],
+                            )
                         )
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    
+                    # If we're here, we've exhausted all retries
+                    logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
+                    await ctx.send(f"@{ctx.author.name}, there was an error with your request after {max_retries} attempts!")
+                    DiscordWebhook.send_message(
+                        content="<@948699796066144337> WE HAVE A PROBLEM",
+                        username="Scrypt",
+                        avatar_url="https://stux.ai/static/cryy.png",
+                        embeds=[
+                            Embed(
+                                author=Author(name=f"{ctx.author.name}"),
+                                title=f"Song Request Error in {ctx.author.channel.name}'s Channel",
+                                description=f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}",
+                                timestamp=datetime.datetime.now(),
+                            )
+                        ]
                     )
-                    await asyncio.sleep(1)
-                    continue
-                
-                # If we're here, we've exhausted all retries
-                logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
-                await ctx.send(f"@{ctx.author.name}, there was an error with your request after {max_retries} attempts!")
-                DiscordWebhook.send_message(
-                    content="<@948699796066144337> WE HAVE A PROBLEM",
-                    username="Scrypt",
-                    avatar_url="https://stux.ai/static/cryy.png",
-                    embeds=[
-                        Embed(
-                            author=Author(name=f"{ctx.author.name}"),
-                            title=f"Song Request Error in {ctx.author.channel.name}'s Channel",
-                            description=f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}",
-                            timestamp=datetime.datetime.now(),
-                        )
-                    ]
-                )
         else:
             return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 

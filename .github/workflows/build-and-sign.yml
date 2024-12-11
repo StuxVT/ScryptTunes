@@ -37,7 +37,7 @@ jobs:
           output-dir: build
           output-file: ScryptTunes.exe
           include-data-files: icon.ico=icon.ico
-          mode: onefile
+          mode: standalone
 
       # - name: sign exe
       #   uses: dlemstra/code-sign-action@v1
