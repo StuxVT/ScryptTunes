@@ -212,23 +212,68 @@ class Bot(commands.Bot):
     @commands.command(name="np", aliases=["nowplaying", "song"])
     async def np_command(self, ctx):
         if self._check_permissions(ctx=ctx, command_name="np_command"):
-            data = self.sp.currently_playing()
-            song_artists = data["item"]["artists"]
-            song_artists_names = [artist["name"] for artist in song_artists]
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    data = self.sp.currently_playing()
+                    song_artists = data["item"]["artists"]
+                    song_artists_names = [artist["name"] for artist in song_artists]
 
-            min_through = int(data["progress_ms"] / (1000 * 60) % 60)
-            sec_through = int(data["progress_ms"] / (1000) % 60)
-            time_through = f"{min_through} mins, {sec_through} secs"
+                    min_through = int(data["progress_ms"] / (1000 * 60) % 60)
+                    sec_through = int(data["progress_ms"] / (1000) % 60)
+                    time_through = f"{min_through} mins, {sec_through} secs"
 
-            min_total = int(data["item"]["duration_ms"] / (1000 * 60) % 60)
-            sec_total = int(data["item"]["duration_ms"] / (1000) % 60)
-            time_total = f"{min_total} mins, {sec_total} secs"
+                    min_total = int(data["item"]["duration_ms"] / (1000 * 60) % 60)
+                    sec_total = int(data["item"]["duration_ms"] / (1000) % 60)
+                    time_total = f"{min_total} mins, {sec_total} secs"
 
-            logging.info(
-                f"Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
-            await ctx.send(
-                f"Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
-            )
+                    logging.info(
+                        f"Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
+                    await ctx.send(
+                        f"Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
+                    )
+                    return  # Success! Exit the retry loop
+
+                except (req.exceptions.ConnectionError, 
+                        urllib3.exceptions.ProtocolError,
+                        spotipy.exceptions.SpotifyException) as e:
+                    
+                    if attempt < max_retries - 1:  # Still have retries left
+                        logging.info(f"Spotify connection failed, attempt {attempt + 1}/{max_retries}. Recreating client...")
+                        # Recreate the Spotify client
+                        self.sp = spotipy.Spotify(
+                            auth_manager=SpotifyOAuth(
+                                client_id=self.config.spotify_client_id,
+                                client_secret=self.config.spotify_secret,
+                                redirect_uri="http://localhost:8080",
+                                cache_path=CACHE,
+                                scope=[
+                                    "user-modify-playback-state",
+                                    "user-read-currently-playing",
+                                    "user-read-playback-state",
+                                    "user-read-recently-played",
+                                ],
+                            )
+                        )
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    
+                    # If we're here, we've exhausted all retries
+                    logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
+                    await ctx.send(f"@{ctx.author.name}, there was an error getting the current song after {max_retries} attempts!")
+                    DiscordWebhook.send_message(
+                        content="<@948699796066144337> WE HAVE A PROBLEM",
+                        username="Scrypt",
+                        avatar_url="https://stux.ai/static/cryy.png",
+                        embeds=[
+                            Embed(
+                                author=Author(name=f"{ctx.author.name}"),
+                                title=f"Now Playing Error in {ctx.author.channel.name}'s Channel",
+                                description=f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}",
+                                timestamp=datetime.datetime.now(),
+                            )
+                        ]
+                    )
         else:
             return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
@@ -237,22 +282,67 @@ class Bot(commands.Bot):
     )
     async def recent_played_command(self, ctx):
         if self._check_permissions(ctx=ctx, command_name="recent_played_command"):
-            recents = self.sp.current_user_recently_played(limit=10)
-            songs = []
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    recents = self.sp.current_user_recently_played(limit=10)
+                    songs = []
 
-            for song in recents["items"]:
-                # if the song artists include more than one artist: add all artist names to an artist list variable
-                if len(song["track"]["artists"]) > 1:
-                    artists = [artist["name"] for artist in song["track"]["artists"]]
-                    song_artists = ", ".join(artists)
-                # if the song artists only include one artist: add the artist name to the artist list variable
-                else:
-                    song_artists = song["track"]["artists"][0]["name"]
+                    for song in recents["items"]:
+                        # if the song artists include more than one artist: add all artist names to an artist list variable
+                        if len(song["track"]["artists"]) > 1:
+                            artists = [artist["name"] for artist in song["track"]["artists"]]
+                            song_artists = ", ".join(artists)
+                        # if the song artists only include one artist: add the artist name to the artist list variable
+                        else:
+                            song_artists = song["track"]["artists"][0]["name"]
 
-                songs.append(song["track"]["name"] + " - " + song_artists)
+                        songs.append(song["track"]["name"] + " - " + song_artists)
 
-            logging.info("Recently Played: " + " | ".join(songs))
-            await ctx.send("Recently Played: " + " | ".join(songs))
+                    logging.info("Recently Played: " + " | ".join(songs))
+                    await ctx.send("Recently Played: " + " | ".join(songs))
+                    return  # Success! Exit the retry loop
+
+                except (req.exceptions.ConnectionError, 
+                        urllib3.exceptions.ProtocolError,
+                        spotipy.exceptions.SpotifyException) as e:
+                    
+                    if attempt < max_retries - 1:  # Still have retries left
+                        logging.info(f"Spotify connection failed, attempt {attempt + 1}/{max_retries}. Recreating client...")
+                        # Recreate the Spotify client
+                        self.sp = spotipy.Spotify(
+                            auth_manager=SpotifyOAuth(
+                                client_id=self.config.spotify_client_id,
+                                client_secret=self.config.spotify_secret,
+                                redirect_uri="http://localhost:8080",
+                                cache_path=CACHE,
+                                scope=[
+                                    "user-modify-playback-state",
+                                    "user-read-currently-playing",
+                                    "user-read-playback-state",
+                                    "user-read-recently-played",
+                                ],
+                            )
+                        )
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    
+                    # If we're here, we've exhausted all retries
+                    logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
+                    await ctx.send(f"@{ctx.author.name}, there was an error getting recently played songs after {max_retries} attempts!")
+                    DiscordWebhook.send_message(
+                        content="<@948699796066144337> WE HAVE A PROBLEM",
+                        username="Scrypt",
+                        avatar_url="https://stux.ai/static/cryy.png",
+                        embeds=[
+                            Embed(
+                                author=Author(name=f"{ctx.author.name}"),
+                                title=f"Recent Played Error in {ctx.author.channel.name}'s Channel",
+                                description=f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}",
+                                timestamp=datetime.datetime.now(),
+                            )
+                        ]
+                    )
         else:
             return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
