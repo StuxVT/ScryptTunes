@@ -5,28 +5,25 @@ import json
 import logging
 import os
 import re
-from enum import Enum
+import traceback
 from urllib import request as url_request
 from urllib.parse import quote
 
 # Third-Party
 import requests as req
 import spotipy
-from pydantic import ValidationError
+from pydantic import ValidationError, HttpUrl
 from spotipy.oauth2 import SpotifyOAuth
-from twitchAPI.oauth import UserAuthenticator
-from twitchAPI.pubsub import PubSub
-from twitchAPI.twitch import Twitch
-from twitchAPI.types import AuthScope
-from twitchio import Message, Chatter, Channel
 from twitchio.ext import commands
 from twitchio.ext.commands import Context
-from twitchio.ext.commands.stringparser import StringParser
+import urllib3
 
 # Local
 from bot.blacklists import read_json, write_json
-from constants import CACHE, CONFIG, Permission
+from bot.models.discord import DiscordWebhook, Embed, Author
+from constants import CACHE, CONFIG
 from ui.models.config import Config
+
 
 
 async def is_valid_media_url(url: str, ctx: Context) -> bool:
@@ -84,8 +81,9 @@ class Bot(commands.Bot):
                     "user-read-currently-playing",
                     "user-read-playback-state",
                     "user-read-recently-played",
-                ],
-            )
+                ]
+            ),
+            requests_timeout=10,
         )
 
         self.URL_REGEX = (
@@ -119,82 +117,15 @@ class Bot(commands.Bot):
         return False
 
     async def event_ready(self):
-        if self.config.channel_points_reward:
-            # Set up TwitchAPI Sub for Channel Point Redeems
-            twitch = Twitch(self.config.client_id, self.config.client_secret)
-            twitch.authenticate_app([])
-            target_scope: list = [AuthScope.CHANNEL_READ_REDEMPTIONS]
-            auth = UserAuthenticator(twitch, target_scope, force_verify=False)
-            token, refresh_token = auth.authenticate()
-            twitch.set_user_authentication(token, target_scope, refresh_token)
-
-            user_id: str = twitch.get_users(logins=[self.config.channel])["data"][0]["id"]
-
-            pubsub = PubSub(twitch)
-            uuid = pubsub.listen_channel_points(user_id, self.channel_point_event)
-            pubsub.start()
-
         logging.info("\n" * 100)
         logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
-
-    def channel_point_event(self, uuid, data):
-        # TODO: ctx.send not working when invoking song requests through redeem
-        if (
-                data["data"]["redemption"]["reward"]["title"].lower()
-                != self.config.channel_points_reward.lower()
-        ):
-            return
-
-        song: str = data["data"]["redemption"]["user_input"]
-        blacklisted_users = read_json("blacklist_user")["users"]
-        if data["data"]["redemption"]["user"]["login"] in blacklisted_users:
-            return
-
-        # Create fake context for injection into song request event
-        websocket = self._connection
-        chatter = Chatter(
-            websocket=websocket,  # todo
-            name=data["data"]["redemption"]["user"]["login"],
-            channel=data["data"]["redemption"]["channel_id"],
-            tags={
-                'user-id': data["data"]["redemption"]["user"]["id"],
-                'subscriber': '0',  # todo
-                'mod': '0',  # todo
-                'display-name': data["data"]["redemption"]["user"]["display_name"],
-                'color': '#000000',  # todo
-                'vip': '0',  # todo
-            }
-        )
-        message = Message(
-            content=song,
-            author=chatter,
-            channel=Channel(name=data["data"]["redemption"]["channel_id"], websocket=websocket),
-            tags={
-                'id': data["data"]["redemption"]["id"],
-                'tmi-sent-ts': datetime.datetime.now().timestamp() * 1000,
-            }
-        )
-        view = StringParser()
-        view.process_string(song)
-        ctx = Context(
-            message=message,
-            bot=self,
-            prefix=self.config.prefix,
-            command=self.songrequest_command,
-            args=[],  # n/a
-            kwargs={},  # n/a
-            valid=True,
-            view=view
-        )
-
-        asyncio.run_coroutine_threadsafe(self.invoke(context=ctx), asyncio.get_event_loop())
 
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
         if self._check_permissions(ctx=ctx, command_name="ping_command"):
-            await ctx.send(f":) 🎶 ScryptTunes v{self.version} is online!")
+            await ctx.send(f":) ScryptTunes v{self.version} is online!")
         else:
-            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+            return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
         
 
     @commands.command(name="blacklistuser")
@@ -281,49 +212,142 @@ class Bot(commands.Bot):
     @commands.command(name="np", aliases=["nowplaying", "song"])
     async def np_command(self, ctx):
         if self._check_permissions(ctx=ctx, command_name="np_command"):
-            data = self.sp.currently_playing()
-            song_artists = data["item"]["artists"]
-            song_artists_names = [artist["name"] for artist in song_artists]
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    data = self.sp.currently_playing()
+                    if data is None or data["item"] is None:
+                        await ctx.send("No song is currently playing on Spotify!")
+                        return
+                    song_artists = data["item"]["artists"]
+                    song_artists_names = [artist["name"] for artist in song_artists]
 
-            min_through = int(data["progress_ms"] / (1000 * 60) % 60)
-            sec_through = int(data["progress_ms"] / (1000) % 60)
-            time_through = f"{min_through} mins, {sec_through} secs"
+                    min_through = int(data["progress_ms"] / (1000 * 60) % 60)
+                    sec_through = int(data["progress_ms"] / (1000) % 60)
+                    time_through = f"{min_through} mins, {sec_through} secs"
 
-            min_total = int(data["item"]["duration_ms"] / (1000 * 60) % 60)
-            sec_total = int(data["item"]["duration_ms"] / (1000) % 60)
-            time_total = f"{min_total} mins, {sec_total} secs"
+                    min_total = int(data["item"]["duration_ms"] / (1000 * 60) % 60)
+                    sec_total = int(data["item"]["duration_ms"] / (1000) % 60)
+                    time_total = f"{min_total} mins, {sec_total} secs"
 
-            logging.info(
-                f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
-            await ctx.send(
-                f"🎶Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
-            )
+                    logging.info(
+                        f"Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}")
+                    await ctx.send(
+                        f"Now Playing - {data['item']['name']} by {', '.join(song_artists_names)} | Link: {data['item']['external_urls']['spotify']} | {time_through} - {time_total}"
+                    )
+                    return  # Success! Exit the retry loop
+
+                except (req.exceptions.ConnectionError, 
+                        urllib3.exceptions.ProtocolError,
+                        spotipy.exceptions.SpotifyException) as e:
+                    
+                    if attempt < max_retries - 1:  # Still have retries left
+                        logging.info(f"Spotify connection failed, attempt {attempt + 1}/{max_retries}. Recreating client...")
+                        # Recreate the Spotify client
+                        self.sp = spotipy.Spotify(
+                            auth_manager=SpotifyOAuth(
+                                client_id=self.config.spotify_client_id,
+                                client_secret=self.config.spotify_secret,
+                                redirect_uri="http://localhost:8080",
+                                cache_path=CACHE,
+                                scope=[
+                                    "user-modify-playback-state",
+                                    "user-read-currently-playing",
+                                    "user-read-playback-state",
+                                    "user-read-recently-played",
+                                ],
+                            )
+                        )
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    
+                    # If we're here, we've exhausted all retries
+                    logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
+                    await ctx.send(f"@{ctx.author.name}, there was an error getting the current song after {max_retries} attempts!")
+                    DiscordWebhook.send_message(
+                        content="<@948699796066144337> WE HAVE A PROBLEM",
+                        username="Scrypt",
+                        avatar_url="https://stux.ai/static/cryy.png",
+                        embeds=[
+                            Embed(
+                                author=Author(name=f"{ctx.author.name}"),
+                                title=f"Now Playing Error in {ctx.author.channel.name}'s Channel",
+                                description=f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}",
+                                timestamp=datetime.datetime.now(),
+                            )
+                        ]
+                    )
         else:
-            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+            return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
-    @commands.command(
-        name="lastsong", aliases=["previoussongs", "last", "previousplayed", "recent", "recentplayed"]
-    )
-    async def recent_played_command(self, ctx):
-        if self._check_permissions(ctx=ctx, command_name="recent_played_command"):
-            recents = self.sp.current_user_recently_played(limit=10)
-            songs = []
+    # @commands.command(
+    #     name="lastsong", aliases=["previoussongs", "last", "previousplayed", "recent", "recentplayed"]
+    # )
+    # async def recent_played_command(self, ctx):
+    #     if self._check_permissions(ctx=ctx, command_name="recent_played_command"):
+    #         max_retries = 3
+    #         for attempt in range(max_retries):
+    #             try:
+    #                 recents = self.sp.current_user_recently_played(limit=10)
+    #                 songs = []
 
-            for song in recents["items"]:
-                # if the song artists include more than one artist: add all artist names to an artist list variable
-                if len(song["track"]["artists"]) > 1:
-                    artists = [artist["name"] for artist in song["track"]["artists"]]
-                    song_artists = ", ".join(artists)
-                # if the song artists only include one artist: add the artist name to the artist list variable
-                else:
-                    song_artists = song["track"]["artists"][0]["name"]
+    #                 for song in recents["items"]:
+    #                     # if the song artists include more than one artist: add all artist names to an artist list variable
+    #                     if len(song["track"]["artists"]) > 1:
+    #                         artists = [artist["name"] for artist in song["track"]["artists"]]
+    #                         song_artists = ", ".join(artists)
+    #                     # if the song artists only include one artist: add the artist name to the artist list variable
+    #                     else:
+    #                         song_artists = song["track"]["artists"][0]["name"]
 
-                songs.append(song["track"]["name"] + " - " + song_artists)
+    #                     songs.append(song["track"]["name"] + " - " + song_artists)
 
-            logging.info("Recently Played: " + " | ".join(songs))
-            await ctx.send("Recently Played: " + " | ".join(songs))
-        else:
-            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+    #                 logging.info("Recently Played: " + " | ".join(songs))
+    #                 await ctx.send("Recently Played: " + " | ".join(songs))
+    #                 return  # Success! Exit the retry loop
+
+    #             except (req.exceptions.ConnectionError, 
+    #                     urllib3.exceptions.ProtocolError,
+    #                     spotipy.exceptions.SpotifyException) as e:
+                    
+    #                 if attempt < max_retries - 1:  # Still have retries left
+    #                     logging.info(f"Spotify connection failed, attempt {attempt + 1}/{max_retries}. Recreating client...")
+    #                     # Recreate the Spotify client
+    #                     self.sp = spotipy.Spotify(
+    #                         auth_manager=SpotifyOAuth(
+    #                             client_id=self.config.spotify_client_id,
+    #                             client_secret=self.config.spotify_secret,
+    #                             redirect_uri="http://localhost:8080",
+    #                             cache_path=CACHE,
+    #                             scope=[
+    #                                 "user-modify-playback-state",
+    #                                 "user-read-currently-playing",
+    #                                 "user-read-playback-state",
+    #                                 "user-read-recently-played",
+    #                             ],
+    #                         )
+    #                     )
+    #                     await asyncio.sleep(2 ** attempt)
+    #                     continue
+                    
+    #                 # If we're here, we've exhausted all retries
+    #                 logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
+    #                 await ctx.send(f"@{ctx.author.name}, there was an error getting recently played songs after {max_retries} attempts!")
+    #                 DiscordWebhook.send_message(
+    #                     content="<@948699796066144337> WE HAVE A PROBLEM",
+    #                     username="Scrypt",
+    #                     avatar_url="https://stux.ai/static/cryy.png",
+    #                     embeds=[
+    #                         Embed(
+    #                             author=Author(name=f"{ctx.author.name}"),
+    #                             title=f"Recent Played Error in {ctx.author.channel.name}'s Channel",
+    #                             description=f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}",
+    #                             timestamp=datetime.datetime.now(),
+    #                         )
+    #                     ]
+    #                 )
+    #     else:
+    #         return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
     # @commands.command(
     #     name="queue", aliases=["q"]
@@ -360,7 +384,7 @@ class Bot(commands.Bot):
     #         await ctx.send(f'Songs In Queue: {total_songs} '
     #                        f'| Next added song would play in: {hours} hours {minutes:02} minutes {seconds:02} seconds')
     #     else:
-    #         return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
+    #         return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
     @commands.command(name="srhelp", aliases=[])
     async def help_command(self, ctx):
@@ -373,63 +397,64 @@ class Bot(commands.Bot):
         if self._check_permissions(ctx=ctx, command_name="songrequest_command"):
             if not song:
                 return await self.help_command(ctx)
-            try:
-                song_uri = None
-                if re.match(self.URL_REGEX, song):
-                    if not is_valid_media_url(song, ctx):
-                        return
-                    song_uri = song
-                    await self.chat_song_request(ctx, song_uri, song_uri, album=False)
+        
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    song_uri = None
+                    if re.match(self.URL_REGEX, song):
+                        if not await is_valid_media_url(song, ctx):
+                            return
+                        song_uri = song
+                        await self.chat_song_request(ctx, song_uri, song_uri, album=False)
+                    else:
+                        await self.chat_song_request(ctx, song, song_uri, album=False)
 
-                else:
-                    await self.chat_song_request(ctx, song, song_uri, album=False)
-            except Exception as e:
-                # todo: ctx.send different messages based on error type/contents
-                logging.error(f"{e}")
-                await ctx.send(f"@{ctx.author.name}, there was an error with your request!")
+                    logging.info(f"Song request successful for user: {ctx.author.name}, Song: {song}")
+                    return  # Success! Exit the retry loop
+                    
+                except (req.exceptions.ConnectionError, 
+                        urllib3.exceptions.ProtocolError,
+                        spotipy.exceptions.SpotifyException) as e:
+                    
+                    if attempt < max_retries - 1:  # Still have retries left
+                        logging.info(f"Spotify connection failed, attempt {attempt + 1}/{max_retries}. Recreating client...")
+                        # Recreate the Spotify client
+                        self.sp = spotipy.Spotify(
+                            auth_manager=SpotifyOAuth(
+                                client_id=self.config.spotify_client_id,
+                                client_secret=self.config.spotify_secret,
+                                redirect_uri="http://localhost:8080",
+                                cache_path=CACHE,
+                                scope=[
+                                    "user-modify-playback-state",
+                                    "user-read-currently-playing",
+                                    "user-read-playback-state",
+                                    "user-read-recently-played",
+                                ],
+                            )
+                        )
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    
+                    # If we're here, we've exhausted all retries
+                    logging.error(f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}")
+                    await ctx.send(f"@{ctx.author.name}, there was an error with your request after {max_retries} attempts!")
+                    DiscordWebhook.send_message(
+                        content="<@948699796066144337> WE HAVE A PROBLEM",
+                        username="Scrypt",
+                        avatar_url="https://stux.ai/static/cryy.png",
+                        embeds=[
+                            Embed(
+                                author=Author(name=f"{ctx.author.name}"),
+                                title=f"Song Request Error in {ctx.author.channel.name}'s Channel",
+                                description=f"Error: {str(e)}\nStack trace:\n{traceback.format_exc()}",
+                                timestamp=datetime.datetime.now(),
+                            )
+                        ]
+                    )
         else:
-            return await ctx.send(f"@{ctx.author.name} 🎶You don't have permission to do that!")
-
-    # @commands.command(name="skip")
-    # async def skip_song_command(self, ctx):
-    #     sp.next_track()
-    #     await ctx.send(f":) 🎶 Skipping song...")
-
-    # @commands.command(name="albumqueue")
-    #     if ctx.author.is_mod or ctx.author.is_subscriber:
-    # async def albumqueue_command(self, ctx, *, album: str):
-    #         album_uri = None
-
-    #         if (
-    #             album.startswith("spotify:album:")
-    #             or not album.startswith("spotify:album:")
-    #             and re.match(self.URL_REGEX, album)
-    #         ):
-    #             album_uri = album
-    #         await self.album_request(ctx, album_uri)
-    #     else:
-    #         await ctx.send(f"🎶You don't have permission to do that! (Album queue is Sub Only!)")
-
-    """
-        DO NOT USE THE API REQUEST IT WONT WORK.
-        the logic should still work iwth using the spotipy library, so thats why I'm keeping it, but don't do an API request
-        - like this.
-    """
-
-    # async def album_request(self, ctx, song):
-    #     song = song.replace("spotify:album:", "")
-    #     ALBUM_URL = f"https://api.spotify.com/v1/albums/{song}?market=US"
-    #     async with request("GET", ALBUM_URL, headers={
-    #                 "Content-Type": "application/json",
-    #                 "Authorization": "Bearer " + self.token,
-    #             }) as resp:
-    #             data = await resp.json()
-    #             songs_uris = [artist["uri"] for artist in data['tracks']['items']]
-
-    #             for song_uris in songs_uris:
-    #                 await self.song_request(ctx, song, song_uris, album=True)
-    #             await ctx.send(f"Album Requested! {data['name']}")
-    #             return
+            return await ctx.send(f"@{ctx.author.name} You don't have permission to do that!")
 
     async def chat_song_request(self, ctx, song, song_uri, album: bool, requests=None):
         blacklisted_users = read_json("blacklist_user")["users"]
@@ -513,23 +538,3 @@ class Bot(commands.Bot):
                 await ctx.send(
                     f"@{ctx.author.name}, Your song ({song_name} by {', '.join(song_artists_names)}) [ {data['external_urls']['spotify']} ] has been added to the queue!"
                 )
-
-    # def _require_permissions(self, ctx, permission_set):
-    #     """
-    #     RBAC for commands
-    #
-    #     Roles:
-    #         - Twitch Users
-    #             - Unsubbed
-    #             - Subbed (could do tiers)
-    #             - VIP
-    #
-    #         - Admins
-    #             - twitch mods
-    #             - streamer
-    #
-    #     :param ctx: context param from twitchio
-    #     :param permission_set: list of permission strings
-    #     :return:
-    #     """
-    #     pass
