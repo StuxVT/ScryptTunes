@@ -6,8 +6,10 @@
 
 Welcome to ScryptTunes! This application allows you to control your Spotify playlist through Twitch chat commands. This guide will walk you through the installation and setup process, step-by-step.
 
+NOTE: This bot requires Spotify Premium. This is a Spotify API reqirement and there's nothing I can do about it
+
 ### Dev Announcements:
- - Channel points redeem is broken, working on a fix now. If it magically works for you for some reason please let me know.
+ - Channel points redeem is broken, working on a fix. I will disable it in the next release. Don't use it, just doesnt work at all!
 
 ## Table of Contents
 1. [Install](#install)
