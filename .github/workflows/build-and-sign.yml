@@ -68,20 +68,20 @@ jobs:
         id: version
         run: |
           $version = Get-Content -Path VERSION -Raw
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Release for main branch
         if: github.ref == 'refs/heads/main'
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.14.0
         with:
           artifacts: "./build/ScryptTunesInstaller.exe"
           skipIfReleaseExists: True
-          tag: ${{ steps.version.outputs.version }}
+          tag: release-${{ steps.version.outputs.version }}
           makeLatest: true
 
       - name: Release for pre branch
         if: github.event_name == 'pull_request' && github.base_ref == 'pre'
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.14.0
         with:
           artifacts: "./build/ScryptTunesInstaller.exe"
           skipIfReleaseExists: True
