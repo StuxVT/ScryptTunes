@@ -1,9 +1,16 @@
+<div style="border: 1px solid #ffa500; background-color: #fff4e5; padding: 10px; border-radius: 5px;">
+<strong>⚠️ Warning:</strong> Currently we are using a crappy way to do oauth tokens. Everything works but I'm using a <a href="#oauth-Workaround">workaround<a> that isn't ideal. 
+</div>
+
+
 # ScryptTunes
 
 Welcome to ScryptTunes! This application allows you to control your Spotify playlist through Twitch chat commands. This guide will walk you through the installation and setup process, step-by-step.
 
+NOTE: This bot requires Spotify Premium. This is a Spotify API reqirement and there's nothing I can do about it
+
 ### Dev Announcements:
- - Channel points redeem is broken, working on a fix now. If it magically works for you for some reason please let me know.
+ - Channel points redeem is broken, working on a fix. I will disable it in the next release. Don't use it, just doesnt work at all!
 
 ## Table of Contents
 1. [Install](#install)
@@ -17,51 +24,49 @@ Welcome to ScryptTunes! This application allows you to control your Spotify play
 
 ## Setup
 ### 1. General
-1. Open ScryptTunes and click the "Settings" button.
+1. Open ScryptTunes and click the "General Settings" button.
 2. Fill in the following fields:
     - **Nickname**: Name of bot account.
       - If you don't use a separate twitch account for your bot, just put your channel name here.
     - **(Optional) Prefix**: Enter the command indicator for Twitch chat (e.g., `!`). 
     - **Channel**: Channel to listen for commands from. (Very likely to be your twitch channel name)
-    - **Token**: Get your Twitch OAuth token from [Twitch Chat OAuth Password Generator](https://twitchapps.com/tmi/).
-      - This is a safe resource that generates the token locally on the browser. Don't share it with anyone.
+    - **Token**: [See workaround](#OAuth-Workaround) for now. Working on a better solution
+  
+ ![image](https://github.com/user-attachments/assets/9f06212e-30ed-4c20-9c18-9b2851478889)
 
-![](https://cdn.discordapp.com/attachments/933618197213622272/1165117190459101184/image.png?ex=6545aef1&is=653339f1&hm=41cb6634efb36fe66acddfd7e79152523c3755d9759e2cfc735f4b67f3a382fa&)
+
 
 ### 2. Setting Up Spotify
 1. Visit the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/applications).
 2. Click "Create an App" and fill in the necessary details.
-
-![](https://media.discordapp.net/attachments/1057578958029328426/1175910820920709120/image.png?ex=656cf34b&is=655a7e4b&hm=fe42ffadc477e71d8c4ea63c787193ea086c026dbffc530efd960c0ac38e0039&=&width=747&height=672)
+ a. The only important one to get is to fill the "redirect uri" as `http://localhost:8080` WITHOUT A SLASH AT THE END 
 
 3. Once the app is created, click settings.
 
-![](https://cdn.discordapp.com/attachments/1057578958029328426/1175914946756870254/image.png?ex=656cf722&is=655a8222&hm=64cc0b93351770261aa4b3a50bd98aea40fd77797dee3b20a81c7b9bdb0313b7&)
-
 4. You'll see a "Client ID" and "Client Secret". Enter these in the Settings view of ScryptTunes.
 
-![](https://media.discordapp.net/attachments/1057578958029328426/1175915900482895892/image.png?ex=656cf806&is=655a8306&hm=998e7415032993d39538ed423672044b168ab7ef3a2c6673846efeb7c0f87af4&=&width=747&height=232)
+![image](https://github.com/user-attachments/assets/7a6456b1-9469-43d5-92e9-9b564998cfd3)
 
 
 ### 3. Setting Up Twitch
 1. Visit the [Twitch Developer Console](https://dev.twitch.tv/console).
 2. Click "Applications" >> "Register Your Application" and fill in the necessary details.
-
-![](https://cdn.discordapp.com/attachments/1057578958029328426/1175918725602480238/image.png?ex=656cfaa7&is=655a85a7&hm=24698461db8b1340263c9bb5180301c67fdd0cc97f0071fd437ebbf1879747dd&)
-
 3. Click on "Manage" for your app
-
-![](https://cdn.discordapp.com/attachments/964264233103675413/1175922079326032012/image.png?ex=656cfdc7&is=655a88c7&hm=7fe6e2739bf653826ca68ffa28d9a351e4f2be55a1939ee5f8feae03ee207dbb&)
-
 4. You'll see a "Client ID" and "Client Secret". Enter these in the Settings view as well.
 
-![](https://cdn.discordapp.com/attachments/1057578958029328426/1175919816893280277/image.png?ex=656cfbab&is=655a86ab&hm=c71cf74a9dd9b98bfa2a9d90e2c9cc02110c63bdea0c611ae2817ea7a6a08a49&)
+![image](https://github.com/user-attachments/assets/57b52867-ae39-412d-b1d4-059d38dfbf66)
+
 
 ### 4. App Settings
 ### ${\color{red}BE \space SURE \space TO \space CLICK \space SAVE}$
-Once finished, your app settings should look like this:
-![](https://cdn.discordapp.com/attachments/1057578958029328426/1175921010713833482/image.png?ex=656cfcc8&is=655a87c8&hm=1dabaad81cd9b3592e815a3eb7a558c3394195b0b146c8fe840a3da45c3bea80&)
 
+### 5. (New) Make sure to set your "Permission Settings" as well! 
+- Setting everything allowed is how I use it. There's nothing here that isn't okay for regular chatters to access, but I've given you the choice to switch them off for certain roles if needed!
+
+Note: This is white-list based. If a chatter has ANY of these roles, the command is allowed. For example, if you disable VIP, but have "Unsubbed" still enabled, your VIP's will still be able to use the command. (will improve this but its low priority)
+
+![image](https://github.com/user-attachments/assets/c661b01a-0a24-4cf3-baaf-bc3b595c0832)
+ 
 ## Usage
 1. Start playing music on Spotify
 2. Click "Start" on the main page to start the bot
@@ -69,15 +74,30 @@ Once finished, your app settings should look like this:
 
 ---
 
+## OAuth Workaround
+This is a temporary workaround until I implement a built-in solution for oauth. You may use this if you like but it's not the recommended solution as it exposes your chat token to a third party. 
+
+(Unlikely to be a problem, as this is the same thing as connecting your twitch to any other app, but still less safe nonetheless and not the indtended purpose)
+
+### Steps:
+- Go to [Twitch Token Generator](https://twitchtokengenerator.com/) and select "Bot Chat Token"
+- Ensure you're signing in with the account you want sending bot messages into your stream
+- Get the access token and add "oauth:" to the beginning of it like this: `oauth:jd9rtifin45jgfijh45bfkc9kl3l84d`
+- Paste it into the "Token" field of your "General Settings"
+
+![image](https://github.com/user-attachments/assets/e3160a34-25ca-48dc-9f24-90f3c7cd72f2)
+
+---
+
+
 ## Credits
 ### `🎶` [TwitchTunes](https://github.com/mmattDonk/TwitchTunes)
-- I am using a customized version with various bugfixes and extra features (Like support for youtube links) as a placeholder for now. I plan on a full rewrite of the bot, but [mattDonk](https://github.com/mmattDonk) deserves credit for their incredible baseline I'm using as a starting point.  
-   All credit goes to [mattDonk](https://github.com/mmattDonk) for the majority of the baseline bot.
+- Originally forked from this project, has grown to have many more features, fixes, etc, but [mattDonk](https://github.com/mmattDonk) deserves credit for the starting point.
 
 ---
 ## Dev Notes
 You can just run main.py, or build locally if necessary. Feel free to ask questions in DMs on my
-[Twitter](https://twitter.com/stuxvt) or [Discord](http://discord.stux.ai) but please google first.
+[Twitter](https://twitter.com/stuxvt) or [Discord](http://discord.stux.ai) -- there's no such thing as a dumb question, happy to help 💙
 ### Build Locally
 `python -m nuitka --standalone --enable-plugin=tk-inter --include-data-file=icon.ico=icon.ico --output-dir="build" --output-filename="ScryptTunes.exe" .\main.py`
 ### Create Installer
