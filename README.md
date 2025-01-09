@@ -1,6 +1,7 @@
-## Need to rewrite instructions to be more comprehensive, if you need help, contact me. Happy to help set up:
-- Discord: @stuxvt
-- Twitter: @stuxvt
+<div style="border: 1px solid #ffa500; background-color: #fff4e5; padding: 10px; border-radius: 5px;">
+<strong>⚠️ Warning:</strong> Currently we are using a crappy way to do oauth tokens. Everything works but I'm using a <a href="#oauth-Workaround">workaround<a> that isn't ideal. 
+</div>
+
 
 # ScryptTunes
 
