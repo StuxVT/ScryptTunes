@@ -23,7 +23,7 @@ NOTE: This bot requires Spotify Premium. This is a Spotify API reqirement and th
 
 ## Setup
 ### 1. General
-1. Open ScryptTunes and click the "Settings" button.
+1. Open ScryptTunes and click the "General Settings" button.
 2. Fill in the following fields:
     - **Nickname**: Name of bot account.
       - If you don't use a separate twitch account for your bot, just put your channel name here.
@@ -60,6 +60,13 @@ NOTE: This bot requires Spotify Premium. This is a Spotify API reqirement and th
 ### 4. App Settings
 ### ${\color{red}BE \space SURE \space TO \space CLICK \space SAVE}$
 
+### 5. (New) Make sure to set your "Permission Settings" as well! 
+- Setting everything allowed is how I use it. There's nothing here that isn't okay for regular chatters to access, but I've given you the choice to switch them off for certain roles if needed!
+
+Note: This is white-list based. If a chatter has ANY of these roles, the command is allowed. For example, if you disable VIP, but have "Unsubbed" still enabled, your VIP's will still be able to use the command. (will improve this but its low priority)
+
+![image](https://github.com/user-attachments/assets/c661b01a-0a24-4cf3-baaf-bc3b595c0832)
+ 
 ## Usage
 1. Start playing music on Spotify
 2. Click "Start" on the main page to start the bot
