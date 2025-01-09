@@ -97,7 +97,7 @@ This is a temporary workaround until I implement a built-in solution for oauth. 
 ---
 ## Dev Notes
 You can just run main.py, or build locally if necessary. Feel free to ask questions in DMs on my
-[Twitter](https://twitter.com/stuxvt) or [Discord](http://discord.stux.ai) but there are no stupid questions💙
+[Twitter](https://twitter.com/stuxvt) or [Discord](http://discord.stux.ai) -- there's no such thing as a dumb question, happy to help 💙
 ### Build Locally
 `python -m nuitka --standalone --enable-plugin=tk-inter --include-data-file=icon.ico=icon.ico --output-dir="build" --output-filename="ScryptTunes.exe" .\main.py`
 ### Create Installer
