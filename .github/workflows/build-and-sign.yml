@@ -76,7 +76,7 @@ jobs:
         with:
           artifacts: "./build/ScryptTunesInstaller.exe"
           skipIfReleaseExists: True
-          tag: release-${{ steps.version.outputs.version }}
+          tag: ${{ steps.version.outputs.version }}
           makeLatest: true
 
       - name: Release for pre branch
