@@ -29,8 +29,7 @@ NOTE: This bot requires Spotify Premium. This is a Spotify API reqirement and th
       - If you don't use a separate twitch account for your bot, just put your channel name here.
     - **(Optional) Prefix**: Enter the command indicator for Twitch chat (e.g., `!`). 
     - **Channel**: Channel to listen for commands from. (Very likely to be your twitch channel name)
-    - **Token**: Get your Twitch OAuth token from [Twitch Token Generator](https://twitchtokengenerator.com/) and select "Bot Chat Token"
-        - Make sure you sign in with the account you want sending bot messages into your chat
+    - **Token**: [See workaround](#OAuth-Workaround) for now. Working on a better solution
   
  ![image](https://github.com/user-attachments/assets/9f06212e-30ed-4c20-9c18-9b2851478889)
 
@@ -73,6 +72,22 @@ Note: This is white-list based. If a chatter has ANY of these roles, the command
 3. If you need help with commands see the [Commands Guide](https://github.com/StuxVT/ScryptTunes/wiki/Commands#scrypttunes-commands-guide)
 
 ---
+
+## OAuth Workaround
+This is a temporary workaround until I implement a built-in solution for oauth. You may use this if you like but it's not the recommended solution as it exposes your chat token to a third party. 
+
+(Unlikely to be a problem, as this is the same thing as connecting your twitch to any other app, but still less safe nonetheless and not the indtended purpose)
+
+### Steps:
+- Go to [Twitch Token Generator](https://twitchtokengenerator.com/) and select "Bot Chat Token"
+- Ensure you're signing in with the account you want sending bot messages into your stream
+- Get the access token and add "oauth:" to the beginning of it like this: `oauth:jd9rtifin45jgfijh45bfkc9kl3l84d`
+- Paste it into the "Token" field of your "General Settings"
+
+![image](https://github.com/user-attachments/assets/e3160a34-25ca-48dc-9f24-90f3c7cd72f2)
+
+---
+
 
 ## Credits
 ### `🎶` [TwitchTunes](https://github.com/mmattDonk/TwitchTunes)
