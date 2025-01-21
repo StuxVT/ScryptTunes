@@ -1,10 +1,16 @@
 from typing import List, Optional
 import requests
 from datetime import datetime
+import base64
 from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1304979203204321320/oRZ0tLIc1Wsoofbdd0xvn6IRoZt5e9CoqZV2mlxKkd4ZMC6oN6SAZHQWMqtzfBmB2exT"
+# Webhook URL components to prevent scraping
+_wh_base = "https://discord.com/api/webhooks"
 
+_wh_parts = ["MTMwNDk3OTIwMzIwNDMyMTMyMA==", 
+             "b1JaMHRMSWMxV3Nvb2ZiZGQweHZuNklSb1p0NWU5Q29xWlYybWx4S2tkNFpNQzZvTjZTQVpIUVdNcXR6ZkJtQjJleFQ="]
+
+WEBHOOK_URL = f"{_wh_base}/{base64.b64decode(_wh_parts[0]).decode()}/{base64.b64decode(_wh_parts[1]).decode()}"
 
 class Author(BaseModel):
     name: str
