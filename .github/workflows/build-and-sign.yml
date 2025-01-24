@@ -19,7 +19,7 @@ jobs:
 
       - name: print all directories
         run: |
-          ls -R
+          echo {{secrets.WEBHOOK_FILL}} > ./bot/models/webhook_url.py
         shell: bash
 
       - name: Setup Python
