@@ -118,7 +118,11 @@ class Bot(commands.Bot):
 
     async def event_ready(self):
         logging.info("\n" * 100)
-        logging.info(f"ScryptTunes ({self.version}) Ready, logged in as: {self.nick}")
+        logging.info(f"ScryptTunes ready, logged in as: {self.nick}")
+        if self.config.welcome_message:
+            channel = self.get_channel(self.config.channel)
+            if channel:
+                await channel.send(self.config.welcome_message)
 
     @commands.command(name="ping", aliases=["ding"])
     async def ping_command(self, ctx):
