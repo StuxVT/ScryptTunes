@@ -7,7 +7,7 @@ from os import path
 import constants
 from ui.models.song_blacklist import SongBlacklist
 from ui.models.user_blacklist import UserBlacklist
-from ui.models.config import Config, PermissionSettingDict, PermissionConfig, PermissionSetting
+from ui.models.config import Config, PermissionConfig, PermissionSetting
 from ui.views.general_settings_view import GeneralSettingsView
 from ui.views.permission_settings_view import PermissionSettingsView
 
@@ -33,9 +33,12 @@ class SettingsController:
             self.user_blacklist = UserBlacklist()
             self.save_user_blacklist()
 
+        # TODO: find better way to prevent backward compatibility issues
         if os.path.exists(constants.CONFIG):
             with open(constants.CONFIG) as f:
                 config_data = json.load(f)
+                if 'welcome_message' not in config_data:
+                    config_data['welcome_message'] = ""
                 if 'permissions' not in config_data:
                     config_data['permissions'] = {  # todo: find way not to hardcode so much
                         "ping_command": PermissionSetting(

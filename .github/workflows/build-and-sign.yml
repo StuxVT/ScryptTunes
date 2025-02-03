@@ -17,6 +17,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
 
+      - name: print all directories
+        run: |
+          echo {{secrets.WEBHOOK_FILL}} > ./bot/models/webhook_url.py
+        shell: bash
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
