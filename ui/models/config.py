@@ -36,6 +36,7 @@ class Config(BaseModel):
     spotify_secret: str = ""
     spotify_redirect_uri: str = "http://localhost:8080"
     rate_limit: int = 0
+    welcome_message: str = ""
     permissions: PermissionSettingDict = PermissionSettingDict(
         ping_command=PermissionSetting(
             command_name="ping_command",
