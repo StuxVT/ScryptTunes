@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
 
       # - name: webhook_url
       #   run: |
