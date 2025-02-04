@@ -69,7 +69,7 @@ jobs:
           requirements: requirements.txt
           options: --onefile, --windowed, --noconsole, --icon=icon.ico
           spec: main.py
-          
+
       # - name: sign installer
       #   uses: dlemstra/code-sign-action@v1
       #   with:
@@ -93,7 +93,7 @@ jobs:
           makeLatest: true
 
       - name: Release for pre branch
-        if: github.event_name == 'pull_request' && github.base_ref == 'pre'
+        if: github.base_ref == 'pre'
         uses: ncipollo/release-action@v1.14.0
         with:
           artifacts: "./build/ScryptTunesInstaller.exe"
