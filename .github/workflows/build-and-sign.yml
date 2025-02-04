@@ -62,6 +62,12 @@ jobs:
       # - name: Create Installer
       #   run: makensis installer.nsi
 
+      - name: Get version from file
+        id: get_version
+        run: |
+          $version = Get-Content -Path VERSION -Raw
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
       - name: Versatile PyInstaller
         uses: sayyid5416/pyinstaller@v1.8.0
         with:
@@ -70,6 +76,7 @@ jobs:
           options: --onefile, --windowed, --noconsole, --icon=icon.ico
           spec: main.py
           exe_path: build/ScryptTunesInstaller.exe
+          upload_exe_with_name: ScryptTunesInstaller.exe
 
       # - name: sign installer
       #   uses: dlemstra/code-sign-action@v1
@@ -78,28 +85,24 @@ jobs:
       #     password: '${{ secrets.CERT_PASSWORD }}'
       #     files: './build/ScryptTunesInstaller.exe'
 
-      - name: Get version from file
-        id: get_version
-        run: |
-          $version = Get-Content -Path VERSION -Raw
-          echo "version=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Release for main branch
-        if: github.ref == 'refs/heads/main'
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          artifacts: "./build/ScryptTunesInstaller.exe"
-          skipIfReleaseExists: True
-          tag: ${{ steps.get_version.outputs.version }}
-          makeLatest: true
 
-      - name: Release for pre branch
-        if: github.base_ref == 'pre'
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          artifacts: "./build/ScryptTunesInstaller.exe"
-          skipIfReleaseExists: true
-          tag: pre-v${{ steps.get_version.outputs.version }}
-          prerelease: true
-          generateReleaseNotes: false
-          makeLatest: legacy
+      # - name: Release for main branch
+      #   if: github.ref == 'refs/heads/main'
+      #   uses: ncipollo/release-action@v1.14.0
+      #   with:
+      #     artifacts: "./build/ScryptTunesInstaller.exe"
+      #     skipIfReleaseExists: True
+      #     tag: ${{ steps.get_version.outputs.version }}
+      #     makeLatest: true
+
+      # - name: Release for pre branch
+      #   if: github.base_ref == 'pre'
+      #   uses: ncipollo/release-action@v1.14.0
+      #   with:
+      #     artifacts: "./build/ScryptTunesInstaller.exe"
+      #     skipIfReleaseExists: true
+      #     tag: pre-v${{ steps.get_version.outputs.version }}
+      #     prerelease: true
+      #     generateReleaseNotes: false
+      #     makeLatest: legacy
