@@ -17,19 +17,19 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref || github.ref }}
 
-      # - name: webhook_url
-      #   run: |
-      #     echo {{secrets.WEBHOOK_FILL}} > ./bot/models/webhook_url.py
-      #   shell: bash
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install Dependencies
+      - name: webhook_url
         run: |
-          pip install -r requirements.txt
+          echo {{secrets.WEBHOOK_FILL}} > ./bot/models/webhook_url.py
+        shell: bash
+
+      # - name: Setup Python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: '3.11'
+
+      # - name: Install Dependencies
+      #   run: |
+      #     pip install -r requirements.txt
 
       # - name: Build
       #   uses: Nuitka/Nuitka-Action@main
@@ -69,6 +69,7 @@ jobs:
           requirements: requirements.txt
           options: --onefile, --windowed, --noconsole, --icon=icon.ico
           spec: main.py
+          exe_path: build/ScryptTunesInstaller.exe
 
       # - name: sign installer
       #   uses: dlemstra/code-sign-action@v1
