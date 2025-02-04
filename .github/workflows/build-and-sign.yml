@@ -72,7 +72,7 @@ jobs:
       #     files: './build/ScryptTunesInstaller.exe'
 
       - name: Get version from file
-        id: version
+        id: get_version
         run: |
           $version = Get-Content -Path VERSION -Raw
           echo "version=$version" >> $env:GITHUB_OUTPUT
@@ -83,7 +83,7 @@ jobs:
         with:
           artifacts: "./build/ScryptTunesInstaller.exe"
           skipIfReleaseExists: True
-          tag: ${{ steps.version.outputs.version }}
+          tag: ${{ steps.get_version.outputs.version }}
           makeLatest: true
 
       - name: Release for pre branch
@@ -91,6 +91,8 @@ jobs:
         uses: ncipollo/release-action@v1.14.0
         with:
           artifacts: "./build/ScryptTunesInstaller.exe"
-          skipIfReleaseExists: True
-          tag: pre-${{ steps.version.outputs.version }}
+          skipIfReleaseExists: true
+          tag: pre-v${{ steps.get_version.outputs.version }}
           prerelease: true
+          generateReleaseNotes: false
+          makeLatest: legacy
