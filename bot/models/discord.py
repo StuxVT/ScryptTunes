@@ -2,6 +2,7 @@ from typing import List, Optional
 import requests
 from pydantic import BaseModel, Field, HttpUrl
 
+from .webhook_url import WEBHOOK_URL
 
 class Author(BaseModel):
     name: str

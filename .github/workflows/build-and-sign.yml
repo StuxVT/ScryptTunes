@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
       - pre
 
 jobs:
@@ -33,18 +31,18 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Build
-        uses: Nuitka/Nuitka-Action@main
-        with:
-          nuitka-version: main
-          script-name: main.py
-          disable-console: true
-          enable-plugins: tk-inter
-          windows-icon-from-ico: icon.ico
-          output-dir: build
-          output-file: ScryptTunes.exe
-          include-data-files: icon.ico=icon.ico
-          mode: standalone
+      # - name: Build
+      #   uses: Nuitka/Nuitka-Action@main
+      #   with:
+      #     nuitka-version: main
+      #     script-name: main.py
+      #     disable-console: true
+      #     enable-plugins: tk-inter
+      #     windows-icon-from-ico: icon.ico
+      #     output-dir: build
+      #     output-file: ScryptTunes.exe
+      #     include-data-files: icon.ico=icon.ico
+      #     mode: standalone
 
       # - name: sign exe
       #   uses: dlemstra/code-sign-action@v1
@@ -53,17 +51,25 @@ jobs:
       #     password: '${{ secrets.CERT_PASSWORD }}'
       #     files: './build/main.dist/ScryptTunes.exe'
 
-      - name: Install NSIS
-        run: |
-          iwr -useb get.scoop.sh -outfile 'install.ps1'
-          .\install.ps1 -RunAsAdmin
-          scoop update
-          scoop bucket add extras
-          scoop install nsis
+      # - name: Install NSIS
+      #   run: |
+      #     iwr -useb get.scoop.sh -outfile 'install.ps1'
+      #     .\install.ps1 -RunAsAdmin
+      #     scoop update
+      #     scoop bucket add extras
+      #     scoop install nsis
 
-      - name: Create Installer
-        run: makensis installer.nsi
+      # - name: Create Installer
+      #   run: makensis installer.nsi
 
+      - name: Versatile PyInstaller
+        uses: sayyid5416/pyinstaller@v1.8.0
+        with:
+          python_ver: '3.9'
+          requirements: requirements.txt
+          options: --onefile, --windowed, --noconsole, --icon=icon.ico
+          spec: main.py
+          
       # - name: sign installer
       #   uses: dlemstra/code-sign-action@v1
       #   with:
