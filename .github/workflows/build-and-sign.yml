@@ -73,7 +73,7 @@ jobs:
         with:
           python_ver: '3.9'
           requirements: requirements.txt
-          options: --onefile, --windowed, --noconsole, --icon=icon.ico
+          options: --onefile, --windowed, --noconsole, --icon icon.ico
           spec: main.py
           exe_path: build/ScryptTunesInstaller.exe
           upload_exe_with_name: ScryptTunesInstaller.exe
